@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@layer utilities {
+    .is-invalid {
+        border-width: 1px;
+        border-color: #e3342f; 
+        box-shadow: 0 0 0 1px #e3342f;
+    }
+    .is-invalid:focus {
+        box-shadow: 0 0 0 1px #e3342f;
+    }
+    .is-invalid::placeholder {
+        color: #e3342f;
+    }
+    .input-error{
+        color: #e3342f;
+    }
+}

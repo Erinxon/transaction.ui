@@ -1,0 +1,47 @@
+ .gradient-bg {
+     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+ }
+
+ .card-shadow {
+     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+ }
+
+ .bounce-in {
+     animation: bounceIn 0.6s ease-out;
+ }
+
+ @keyframes bounceIn {
+     0% {
+         transform: scale(0.3);
+         opacity: 0;
+     }
+
+     50% {
+         transform: scale(1.05);
+     }
+
+     70% {
+         transform: scale(0.9);
+     }
+
+     100% {
+         transform: scale(1);
+         opacity: 1;
+     }
+ }
+
+ .slide-up {
+     animation: slideUp 0.5s ease-out;
+ }
+
+ @keyframes slideUp {
+     from {
+         transform: translateY(30px);
+         opacity: 0;
+     }
+
+     to {
+         transform: translateY(0);
+         opacity: 1;
+     }
+ }
