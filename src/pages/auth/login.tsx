@@ -4,30 +4,81 @@ import { loginSchema as schema, type LoginFormValues as FormValues, LoginFormVal
 import { Alert, InputForm } from '../../components';
 import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../../core/auth/hooks/useLogin';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { AxiosError } from 'axios';
+import { useMutation } from '@tanstack/react-query';
+import { verifyTwoFactorCode } from '../../core/auth/services/authApi';
+import { useAuth } from '../../core/auth/context/useAuth';
 
 export const Login = () => {
     const navigate = useNavigate()
     const [errorMsg, setErrorMsg] = useState('')
-    const { mutate, isSuccess, isPending, data } = useLogin()
+    const [infoMsg, setInfoMsg] = useState('')
+    const [isTwoFactorStep, setIsTwoFactorStep] = useState(false)
+    const { mutate: loginMutate, isPending: isLoginPending } = useLogin()
+    const { login: saveTokens } = useAuth()
 
-    useEffect(() => {
-        if (isSuccess && data?.accessToken) {
+    const { mutate: verifyCodeMutate, isPending: isVerifyCodePending } = useMutation({
+        mutationFn: verifyTwoFactorCode,
+        onSuccess: (tokens) => {
+            saveTokens({
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+                requiresTwoFactor: false,
+                message: null,
+            });
             navigate('/app', { replace: true });
+        },
+        onError: (error) => {
+            const axiosError = error as AxiosError;
+            if (axiosError.response?.status === 401 || axiosError.response?.status === 400) {
+                setErrorMsg('El código de verificación es inválido');
+            } else {
+                setErrorMsg('Error verificando el código, intenta más tarde');
+            }
         }
-    }, [isSuccess, data, navigate]);
+    });
+
+    const isPending = isLoginPending || isVerifyCodePending;
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: FormValueEmptyValue
     })
 
-    const onSubmit: SubmitHandler<FormValues> = (data) => {
-        mutate(data, {
+    const onSubmit: SubmitHandler<FormValues> = (formData) => {
+        if (isTwoFactorStep) {
+            if (!formData.code?.trim()) {
+                setErrorMsg('Debes ingresar el código de verificación');
+                return;
+            }
+
+            verifyCodeMutate({
+                email: formData.email,
+                password: formData.password,
+                code: formData.code.trim()
+            });
+            return;
+        }
+
+        loginMutate({
+            email: formData.email,
+            password: formData.password,
+        }, {
+            onSuccess: (response) => {
+                if (response.requiresTwoFactor) {
+                    setIsTwoFactorStep(true);
+                    setInfoMsg(response.message ?? 'Se envió un código a tu correo para continuar.');
+                    return;
+                }
+
+                if (response.accessToken && response.refreshToken) {
+                    navigate('/app', { replace: true });
+                }
+            },
             onError: (error) => {
                 const axiosError = error as AxiosError;
-                if (axiosError?.status === 401) {
+                if (axiosError.response?.status === 401) {
                     setErrorMsg('Credenciales incorrectas');
                 } else {
                     setErrorMsg('Error inesperado, intenta más tarde');
@@ -58,17 +109,34 @@ export const Login = () => {
                             <InputForm name='password' control={control} label='Password' type='password' error={errors.password} placeholder='your password' />
                         </div>
 
+                        {isTwoFactorStep && (
+                            <div className="mb-4">
+                                <InputForm
+                                    name='code'
+                                    control={control}
+                                    label='2FA Code'
+                                    type='text'
+                                    error={errors.code}
+                                    placeholder='Ingresa el código de verificación'
+                                />
+                            </div>
+                        )}
+
                         <div className="flex justify-between items-center mb-6">
-                            <div className="flex items-center">
+                            {/* <div className="flex items-center">
                                 <input type="checkbox" id="remember" className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
                                 <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">Remember me</label>
-                            </div>
+                            </div> */}
                             {/* <a href="forgot-password.html" className="text-sm text-emerald-600 hover:text-emerald-500">Forgot password?</a> */}
                         </div>
 
                         <button type='submit' className="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                            {isPending ? 'Entrando...' : ' Sign in'}
+                            {isPending ? 'Procesando...' : isTwoFactorStep ? 'Verificar código' : ' Sign in'}
                         </button>
+
+                        {infoMsg && (
+                            <Alert type='info' message={infoMsg} className='mt-2' onClose={() => setInfoMsg('')} />
+                        )}
 
                         {errorMsg && (
                             <Alert  type='error'  message={errorMsg} className='mt-2' onClose={() => setErrorMsg('')}/>

@@ -8,6 +8,7 @@ export interface ProfileRequest {
   lastName: string;
   email: string;
   phoneNumber: string;
+  twoFactorEnabled: boolean;
   receiveEmailNotifications: boolean;
   receiveMonthlyExpenseReport: boolean;
   receiveWeeklyExpenseReport: boolean;
@@ -22,6 +23,7 @@ export interface ProfileResponse {
   lastName: string;
   email: string;
   phoneNumber: string;
+  twoFactorEnabled: boolean;
   receiveEmailNotifications: boolean;
   receiveMonthlyExpenseReport: boolean;
   receiveWeeklyExpenseReport: boolean;

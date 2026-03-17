@@ -8,7 +8,9 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: login, 
     onSuccess: (data) => {
-      saveTokens(data);
+      if (!data.requiresTwoFactor && data.accessToken && data.refreshToken) {
+        saveTokens(data);
+      }
     },
     onError: (error) => {
       console.error('Login error:', error);

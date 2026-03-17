@@ -5,6 +5,7 @@ export const UpdateProfileSchema = z.object({
     lastName: z.string().min(1, 'El apellido es obligatorio').max(100),
     email: z.string().min(1, 'El email es obligatorio').email('Correo inválido').max(250),
     phoneNumber: z.string().max(10, 'No debe exceder los 10 caracteres').nullable(),
+    twoFactorEnabled: z.boolean().optional(),
     receiveEmailNotifications: z.boolean().optional(),
     receiveMonthlyExpenseReport: z.boolean().optional(),
     receiveWeeklyExpenseReport: z.boolean().optional(),
@@ -38,6 +39,7 @@ export const UpdateProfileSchemaFormValuesEmptyValue: UpdateProfileSchemaFormVal
     lastName: '',
     email: '',
     phoneNumber: '',
+    twoFactorEnabled: false,
     currentPassword: '',
     password: '',
     confirmPassword: ''

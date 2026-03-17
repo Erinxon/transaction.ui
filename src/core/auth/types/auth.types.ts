@@ -6,6 +6,24 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  accessToken: string | null;
+  refreshToken: string | null;
+  requiresTwoFactor: boolean;
+  message: string | null;
+}
+
+export interface SendTwoFactorCodeRequest {
+  email: string;
+  password: string;
+}
+
+export interface VerifyTwoFactorCodeRequest {
+  email: string;
+  password: string;
+  code: string;
+}
+
+export interface VerifyTwoFactorCodeResponse {
   accessToken: string;
   refreshToken: string;
 }

@@ -38,6 +38,7 @@ export const Profile = () => {
             lastName: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber ?? '',
+            twoFactorEnabled: formData.twoFactorEnabled ?? false,
             receiveEmailNotifications: formData.receiveEmailNotifications ?? false,
             receiveMonthlyExpenseReport: formData.receiveMonthlyExpenseReport ?? false,
             receiveWeeklyExpenseReport: formData.receiveWeeklyExpenseReport ?? false,
@@ -76,6 +77,7 @@ export const Profile = () => {
         setValue('lastName', data.lastName);
         setValue('email', data.email);
         setValue('phoneNumber', data.phoneNumber);
+        setValue('twoFactorEnabled', data.twoFactorEnabled);
         setValue('receiveEmailNotifications', data.receiveEmailNotifications);
         setValue('receiveMonthlyExpenseReport', data.receiveMonthlyExpenseReport);
         setValue('receiveWeeklyExpenseReport', data.receiveWeeklyExpenseReport);
@@ -186,6 +188,14 @@ export const Profile = () => {
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Preferences</h3>
                                     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="flex items-center">
+                                            <CheckboxForm
+                                                name="twoFactorEnabled"
+                                                control={control}
+                                                label="Enable two-factor authentication"
+                                                error={errors.twoFactorEnabled}
+                                            />
+                                        </div>
                                         <div className="flex items-center">
                                             <CheckboxForm
                                                 name="receiveEmailNotifications"
