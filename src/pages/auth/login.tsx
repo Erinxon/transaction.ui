@@ -63,7 +63,7 @@ export const Login = () => {
                                 <input type="checkbox" id="remember" className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
                                 <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">Remember me</label>
                             </div>
-                            <a href="forgot-password.html" className="text-sm text-emerald-600 hover:text-emerald-500">Forgot password?</a>
+                            {/* <a href="forgot-password.html" className="text-sm text-emerald-600 hover:text-emerald-500">Forgot password?</a> */}
                         </div>
 
                         <button type='submit' className="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">

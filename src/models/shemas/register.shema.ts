@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const RegisterSchema = z.object({
     firstName: z.string().min(1, 'El nombre es obligatorio').max(100),
     lastName: z.string().min(1, 'El apellido es obligatorio').max(100),
-    email: z.string().min(1, 'El email es obligatorio').email('Correo inválido').max(250),
+    email: z.string().min(1, 'El email es obligatorio').email().max(250),
     phoneNumber: z.string().max(10, 'No debe exceder los 10 caracteres').nullable(),
     receiveEmailNotifications: z.boolean().optional(),
     receiveMonthlyExpenseReport: z.boolean().optional(),
