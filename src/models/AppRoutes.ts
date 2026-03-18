@@ -9,5 +9,12 @@ export const AppRoutes = {
     dashboard: 'dashboard',
     transactions: 'transactions',
     profile: 'profile',
+    admin: {
+      root: 'admin',
+      dashboard: 'dashboard',
+      logs: 'logs',
+      audit: 'audit',
+      users: 'users',
+    },
   }
 }

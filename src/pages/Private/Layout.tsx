@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { AppRoutes } from "../../models/AppRoutes";
 import { MenuLink } from "../../components";
 import { useAuth } from "../../core/auth/context/useAuth";
+import { isAdminToken } from "../../utils";
 
 interface Props {
     children: ReactNode
@@ -9,6 +10,7 @@ interface Props {
 
 export const Layout = ({ children }: Props) => {
     const { logout } = useAuth();
+    const isAdmin = isAdminToken(localStorage.getItem('accessToken'));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobileView, setIsMobileView] = useState<boolean>(() => window.innerWidth < 1024);
 
@@ -58,32 +60,76 @@ export const Layout = ({ children }: Props) => {
                 </div>
 
                 <nav className="app-nav">
-                    <MenuLink
-                        name="Dashboard" 
-                        icon="fas fa-chart-line" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.dashboard}`}
-                        className="app-nav-link"
-                        activeClassName="is-active"
-                        onClick={closeSidebar}
-                    />
+                    {!isAdmin && (
+                        <>
+                            <MenuLink
+                                name="Dashboard" 
+                                icon="fas fa-chart-line" 
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.dashboard}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
 
-                    <MenuLink
-                        name="Transactions" 
-                        icon="fas fa-receipt" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.transactions}`}
-                        className="app-nav-link"
-                        activeClassName="is-active"
-                        onClick={closeSidebar}
-                    />
+                            <MenuLink
+                                name="Transactions" 
+                                icon="fas fa-receipt" 
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.transactions}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
 
-                    <MenuLink
-                        name="Profile" 
-                        icon="fas fa-user-pen" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.profile}`}
-                        className="app-nav-link"
-                        activeClassName="is-active"
-                        onClick={closeSidebar}
-                    />
+                            <MenuLink
+                                name="Profile" 
+                                icon="fas fa-user-pen" 
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.profile}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
+                        </>
+                    )}
+
+                    {isAdmin && (
+                        <>
+                            <MenuLink
+                                name="Dashboard"
+                                icon="fas fa-shield-halved"
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.dashboard}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
+
+                            <MenuLink
+                                name="Logs"
+                                icon="fas fa-scroll"
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.logs}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
+
+                            <MenuLink
+                                name="Auditoria"
+                                icon="fas fa-magnifying-glass-chart"
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.audit}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
+
+                            <MenuLink
+                                name="Usuarios"
+                                icon="fas fa-users-gear"
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.users}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
+                        </>
+                    )}
 
                     <MenuLink
                         name="Logout" 

@@ -5,6 +5,8 @@ import { AppRoutes } from "../../models/AppRoutes"
 import { Transactions } from "./transactions/Transactions"
 import { Profile } from "./profile/Profile"
 import { Layout } from "./Layout"
+import { AdminGuard } from "../../guard/AdminGuard"
+import { AdminRouter } from "./admin/AdminRouter"
 
 export const PrivateRouter = () => {
     return (
@@ -14,6 +16,9 @@ export const PrivateRouter = () => {
                 <Route path={AppRoutes.private.dashboard} element={<Dashboard />} />
                 <Route path={AppRoutes.private.transactions} element={<Transactions />} />
                 <Route path={AppRoutes.private.profile} element={<Profile />} />
+                <Route element={<AdminGuard />}>
+                    <Route path={`${AppRoutes.private.admin.root}/*`} element={<AdminRouter />} />
+                </Route>
             </RoutesWithNotFound>
         </Layout>
     )

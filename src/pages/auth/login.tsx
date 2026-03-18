@@ -9,6 +9,8 @@ import type { AxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import { verifyTwoFactorCode } from '../../core/auth/services/authApi';
 import { useAuth } from '../../core/auth/context/useAuth';
+import { isAdminToken } from '../../utils';
+import { AppRoutes } from '../../models/AppRoutes';
 
 export const Login = () => {
     const navigate = useNavigate()
@@ -17,6 +19,14 @@ export const Login = () => {
     const [isTwoFactorStep, setIsTwoFactorStep] = useState(false)
     const { mutate: loginMutate, isPending: isLoginPending } = useLogin()
     const { login: saveTokens } = useAuth()
+
+    const getRedirectPathByRole = (accessToken: string) => {
+        if (isAdminToken(accessToken)) {
+            return `${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.dashboard}`;
+        }
+
+        return `${AppRoutes.private.root}/${AppRoutes.private.dashboard}`;
+    };
 
     const { mutate: verifyCodeMutate, isPending: isVerifyCodePending } = useMutation({
         mutationFn: verifyTwoFactorCode,
@@ -27,7 +37,7 @@ export const Login = () => {
                 requiresTwoFactor: false,
                 message: null,
             });
-            navigate('/app', { replace: true });
+            navigate(getRedirectPathByRole(tokens.accessToken), { replace: true });
         },
         onError: (error) => {
             const axiosError = error as AxiosError;
@@ -77,7 +87,7 @@ export const Login = () => {
                 }
 
                 if (response.accessToken && response.refreshToken) {
-                    navigate('/app', { replace: true });
+                    navigate(getRedirectPathByRole(response.accessToken), { replace: true });
                 }
             },
             onError: (error) => {
