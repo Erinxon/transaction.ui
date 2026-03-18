@@ -36,7 +36,7 @@ export const TextAreaForm = <T extends FieldValues>({
                         {...field}
                         className={
                             className ??
-                            'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500'
+                            'textarea-modern'
                         }
                         placeholder={placeholder}
                     />

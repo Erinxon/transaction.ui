@@ -93,11 +93,11 @@ export const Login = () => {
 
     return (
         <>
-            <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                    <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-gray-800">Finance App</h1>
-                        <p className="text-gray-600">Manage your finances easily</p>
+            <div className="auth-shell fade-in-up">
+                <div className="auth-card">
+                    <div className="mb-8 text-center">
+                        <h1 className="page-title">Pulse Ledger</h1>
+                        <p className="page-subtitle">Controla tus finanzas con una interfaz clara y rapida.</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)}>
@@ -122,15 +122,9 @@ export const Login = () => {
                             </div>
                         )}
 
-                        <div className="flex justify-between items-center mb-6">
-                            {/* <div className="flex items-center">
-                                <input type="checkbox" id="remember" className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
-                                <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">Remember me</label>
-                            </div> */}
-                            {/* <a href="forgot-password.html" className="text-sm text-emerald-600 hover:text-emerald-500">Forgot password?</a> */}
-                        </div>
+                        <div className="mb-6" />
 
-                        <button type='submit' className="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                        <button type='submit' className="btn-modern btn-primary w-full py-3">
                             {isPending ? 'Procesando...' : isTwoFactorStep ? 'Verificar código' : ' Sign in'}
                         </button>
 
@@ -146,7 +140,7 @@ export const Login = () => {
                     <div className="mt-6 text-center">
                         <p className="text-sm text-gray-600">
                             Don't have an account?
-                            <a onClick={handleRegister} className="font-medium text-emerald-600 hover:text-emerald-500 cursor-pointer"> Sign up</a>
+                            <a onClick={handleRegister} className="cursor-pointer font-medium text-emerald-700 hover:text-emerald-600"> Sign up</a>
                         </p>
                     </div>
                 </div>

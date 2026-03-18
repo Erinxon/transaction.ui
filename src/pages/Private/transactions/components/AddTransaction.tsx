@@ -115,13 +115,11 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             </div>
 
             <div className="mb-4">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
+                <label htmlFor="amount" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Amount</label>
+                <div className="flex items-center rounded-xl border border-[#cedbd4] bg-[#fcfffd] px-3 focus-within:ring-4 focus-within:ring-[var(--ring)]">
+                    <span className="text-sm font-semibold text-gray-500">$</span>
                     <InputForm name='amount' control={control} type='number' placeholder='0.00'
-                        className="pl-7 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                        className="w-full border-0 bg-transparent py-2.5 pl-2 pr-0 text-gray-900 tabular-nums focus:outline-none" />
                 </div>
                 {errors.amount && (
                     <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
@@ -129,15 +127,15 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             </div>
 
             <div className="mb-4">
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label htmlFor="date" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Date</label>
                 <InputForm name='date' control={control} type='date' error={errors.date as FieldError}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="field-modern" />
             </div>
 
             <div className="mb-4">
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label htmlFor="category" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Category</label>
                 <SelectForm name='categoryId' control={control} error={errors.categoryId}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="select-modern"
                     placeholder="Select a category"
                     options={categories?.map(category => ({
                         id: category.id,
@@ -146,9 +144,9 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             </div>
 
             <div className="mb-6">
-                <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                <label htmlFor="comment" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Comment</label>
                 <TextAreaForm name='description' control={control} error={errors.description}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="textarea-modern"
                     placeholder="Add a comment..." />
             </div>
 
@@ -169,10 +167,10 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             )}
 
             <div className="flex justify-end space-x-3">
-                <button type="button" onClick={handlerCancel} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 cursor-pointer" id="cancel-add-btn">
+                <button type="button" onClick={handlerCancel} className="btn-modern btn-secondary" id="cancel-add-btn">
                     Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 bg-emerald-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 cursor-pointer">
+                <button type="submit" className="btn-modern btn-primary">
                     {isPending || updateIsPending ? 'Guardando...' : 'Save Transaction'}
                 </button>
             </div>

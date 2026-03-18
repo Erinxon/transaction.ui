@@ -34,7 +34,6 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
   })
 
   const handleInputChange = (name: keyof DashboardFilter, value: string | number | null) => {
-    console.log(name, value)
     setLocalFilters((prev) => ({
       ...prev,
       [name]: value === "" ? null : value,
@@ -82,7 +81,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
   return (
     <>
       <Modal title="Filtros Avanzados"
-        icon={<Filter className="w-5 h-5 text-blue-600 mr-2" />}
+        icon={<Filter className="w-5 h-5 text-emerald-600 mr-2" />}
         description="Personaliza los filtros para encontrar exactamente lo que buscas">
         <>
           <div>
@@ -96,7 +95,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                 placeholder="Buscar por descripción..."
                 value={localFilters.description || ""}
                 onChange={(e) => handleInputChange("description", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="field-modern"
               />
             </div>
 
@@ -113,7 +112,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                     placeholder="0.00"
                     value={localFilters.minAmount || ""}
                     onChange={(e) => handleInputChange("minAmount", e.target.value ? Number(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="field-modern"
                   />
                 </div>
                 <div className="space-y-1">
@@ -123,7 +122,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                     placeholder="999999.99"
                     value={localFilters.maxAmount || ""}
                     onChange={(e) => handleInputChange("maxAmount", e.target.value ? Number(e.target.value) : null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    className="field-modern"
                   />
                 </div>
               </div>
@@ -135,7 +134,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                 Periodo predefinido
               </label>
               <div className="space-y-2">
-                <select id="date-range-preset" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                <select id="date-range-preset" className="select-modern"
                   value={localFilters.dateRange || ""}
                   onChange={(e) => handleInputChange("dateRange", e.target.value)}>
                   {dateRangeList?.map((dataRange) => <option key={dataRange.key} value={dataRange.key}>{dataRange.name}</option>)}
@@ -156,7 +155,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                       type="date"
                       value={localFilters.startDate || ""}
                       onChange={(e) => handleInputChange("startDate", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      className="field-modern"
                     />
                   </div>
                   <div className="space-y-1">
@@ -165,7 +164,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                       type="date"
                       value={localFilters.endDate || ""}
                       onChange={(e) => handleInputChange("endDate", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      className="field-modern"
                     />
                   </div>
                 </div>
@@ -182,7 +181,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                 <button
                   type="button"
                   onClick={() => setIsSelectOpen(!isSelectOpen)}
-                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="field-modern text-left"
                 >
                   <span className="block truncate">{getTransactionTypeLabel()}</span>
                   <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -197,7 +196,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                 </button>
 
                 {isSelectOpen && (
-                  <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
+                  <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
                     <div
                       onClick={() => {
                         handleInputChange("transactionTypeId", null)
@@ -242,7 +241,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
                 Categoría
               </label>
               <div className="space-y-2">
-                <select id="categoryId" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                <select id="categoryId" className="select-modern"
                   value={localFilters.categoryId || ""}
                   onChange={(e) => handleInputChange("categoryId", e.target.value)}>
                     <option key={0} value="">Todo</option>
@@ -253,15 +252,15 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
 
             {/* Filtros activos */}
             {activeFiltersCount > 0 && (
-              <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-800">
+                  <span className="text-sm font-medium text-emerald-800">
                     {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo
                     {activeFiltersCount > 1 ? "s" : ""}
                   </span>
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1 rounded transition-colors duration-200"
+                    className="text-sm text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100 px-2 py-1 rounded transition-colors duration-200"
                   >
                     Limpiar todo
                   </button>
@@ -272,13 +271,13 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
           <div className="flex justify-end space-x-3">
             <button
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
+              className="btn-modern btn-secondary"
             >
               Cancelar
             </button>
             <button
               onClick={applyFilters}
-              className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
+              className="btn-modern btn-primary"
             >
               Aplicar Filtros
             </button>

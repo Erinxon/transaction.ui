@@ -41,7 +41,7 @@ export const SelectForm = <T extends FieldValues>({
             onChange={(e) => field.onChange(Number(e.target.value))}
             className={
               className ??
-              "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              "select-modern"
             }
           >
             {placeholder && <option value={0}>{placeholder}</option>}

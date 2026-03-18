@@ -63,36 +63,36 @@ export const Register = () => {
 
     return (
         <>
-            <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
-                    <div className="flex justify-center items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800 text-center">Register</h1>
+            <div className="auth-shell fade-in-up">
+                <div className="auth-card">
+                    <div className="mb-6 flex justify-center items-center">
+                        <h1 className="page-title text-center">Create account</h1>
                     </div>
                     <div >
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                        <h3 className="mb-4 text-lg font-semibold text-gray-800">Personal Information</h3>
 
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="first-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         First Name
                                     </label>
                                     <InputForm name='firstName' control={control} type='text' error={errors.firstName as FieldError} />
                                 </div>
                                 <div>
-                                    <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="last-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Last Name
                                     </label>
                                     <InputForm name='lastName' control={control} type='text' error={errors.lastName as FieldError} />
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="email" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Email
                                     </label>
                                     <InputForm name='email' control={control} type='email' error={errors.email as FieldError} />
                                 </div>
                                 <div>
-                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="phone" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Phone
                                     </label>
                                     <InputForm name='phoneNumber' control={control} type='tel' error={errors.phoneNumber as FieldError} />
@@ -100,23 +100,23 @@ export const Register = () => {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="new-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Password
                                     </label>
                                     <InputForm name='password' control={control} type='password' error={errors.password as FieldError}
                                         placeholder="••••••••" />
                                 </div>
                                 <div>
-                                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor="confirm-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Confirm New Password
                                     </label>
                                     <InputForm name='confirmPassword' control={control} type='password' error={errors.confirmPassword as FieldError}
                                         placeholder="••••••••" />
                                 </div>
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Preferences</h3>
+                            <h3 className="mb-4 text-lg font-semibold text-gray-800">Preferences</h3>
                             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-center">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="receiveEmailNotifications"
                                         control={control}
@@ -124,7 +124,7 @@ export const Register = () => {
                                         error={errors.receiveEmailNotifications}
                                     />
                                 </div>
-                                <div className="flex items-center">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="receiveMonthlyExpenseReport"
                                         control={control}
@@ -132,7 +132,7 @@ export const Register = () => {
                                         error={errors.receiveMonthlyExpenseReport}
                                     />
                                 </div>
-                                <div className="flex items-center">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="receiveWeeklyExpenseReport"
                                         control={control}
@@ -140,7 +140,7 @@ export const Register = () => {
                                         error={errors.receiveWeeklyExpenseReport}
                                     />
                                 </div>
-                                <div className="flex items-center">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="receiveBiweeklyExpenseReport"
                                         control={control}
@@ -148,7 +148,7 @@ export const Register = () => {
                                         error={errors.receiveBiweeklyExpenseReport}
                                     />
                                 </div>
-                                <div className="flex items-center">
+                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="sendWeeklyTransactionBackup"
                                         control={control}
@@ -178,7 +178,7 @@ export const Register = () => {
                                 <button
                                     type="submit"
                                     disabled={!isDirty}
-                                    className={`w-full px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer' : 'bg-emerald-800'}`}
+                                    className={`w-full btn-modern ${isDirty ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
                                 >
                                     {updateIsPending ? 'Guardando...' : 'Register'}
                                 </button>
@@ -188,7 +188,7 @@ export const Register = () => {
                             <div className="flex justify-center w-full mt-4">
                                 <p className="text-sm text-gray-600">
                                     ¿Ya tienes una cuenta?{' '}
-                                    <Link to="/login" className="text-emerald-600 hover:underline font-medium">
+                                    <Link to="/login" className="font-medium text-emerald-700 hover:underline">
                                         Inicia sesión
                                     </Link>
                                 </p>

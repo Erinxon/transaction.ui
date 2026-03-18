@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { AppRoutes } from "../../models/AppRoutes";
 import { MenuLink } from "../../components";
 import { useAuth } from "../../core/auth/context/useAuth";
@@ -9,45 +9,117 @@ interface Props {
 
 export const Layout = ({ children }: Props) => {
     const { logout } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isMobileView, setIsMobileView] = useState<boolean>(() => window.innerWidth < 1024);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 1023px)");
+
+        const updateViewport = () => {
+            const mobile = mediaQuery.matches;
+            setIsMobileView(mobile);
+
+            if (!mobile) {
+                setSidebarOpen(false);
+            }
+        };
+
+        updateViewport();
+        mediaQuery.addEventListener("change", updateViewport);
+
+        return () => {
+            mediaQuery.removeEventListener("change", updateViewport);
+        };
+    }, []);
+
+    const closeSidebar = () => {
+        setSidebarOpen(false);
+    }
+
     return (
-        <>
-            <div className="bg-gray-100 min-h-screen">
-                <div className="fixed inset-y-0 left-0 w-64 bg-emerald-800 text-white transition-all duration-300 z-10">
-                    <div className="flex items-center justify-center h-16 border-b border-emerald-700">
-                        <h1 className="text-xl font-bold">Finance App</h1>
+        <div className="app-shell">
+            <aside className={`app-sidebar relative ${sidebarOpen ? "is-open" : ""}`}>
+                <button
+                    aria-label="Close navigation"
+                    className="absolute right-3 top-3 z-40 rounded-xl border border-white/20 bg-white/10 px-2 py-1 text-sm text-white lg:hidden"
+                    onClick={closeSidebar}
+                >
+                    <i className="fas fa-xmark" />
+                </button>
+
+                <div className="app-brand">
+                    <div className="app-brand-mark">
+                        <i className="fas fa-wave-square" />
                     </div>
-                    <nav className="mt-5">
-                        <MenuLink 
-                        name="Dashboard" 
-                        icon="fas fa-home mr-3" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.dashboard}`}
-                        className="flex items-center px-6 py-3 text-white hover:bg-emerald-700" 
-                        activeClassName="bg-emerald-900"/>
-
-                        <MenuLink 
-                        name="Transactions" 
-                        icon="fas fa-exchange-alt mr-3" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.transactions}`}
-                        className="flex items-center px-6 py-3 text-white hover:bg-emerald-700" 
-                        activeClassName="bg-emerald-900"/>
-
-                       <MenuLink 
-                        name="Profile" 
-                        icon="fas fa-user mr-3" 
-                        to={`${AppRoutes.private.root}/${AppRoutes.private.profile}`}
-                        className="flex items-center px-6 py-3 text-white hover:bg-emerald-700" 
-                        activeClassName="bg-emerald-900"/>
-
-                        <MenuLink 
-                        name="Logout" 
-                        icon="fas fa-sign-out-alt mr-3" 
-                        to={`${AppRoutes.login}`}
-                        className="flex items-center px-6 py-3 text-white hover:bg-emerald-700 mt-auto"
-                        onClick={logout}/>
-                    </nav>
+                    <div>
+                        <h1 className="app-brand-title">Pulse Ledger</h1>
+                        <p className="app-brand-subtitle">Finance cockpit</p>
+                    </div>
                 </div>
+
+                <nav className="app-nav">
+                    <MenuLink
+                        name="Dashboard" 
+                        icon="fas fa-chart-line" 
+                        to={`${AppRoutes.private.root}/${AppRoutes.private.dashboard}`}
+                        className="app-nav-link"
+                        activeClassName="is-active"
+                        onClick={closeSidebar}
+                    />
+
+                    <MenuLink
+                        name="Transactions" 
+                        icon="fas fa-receipt" 
+                        to={`${AppRoutes.private.root}/${AppRoutes.private.transactions}`}
+                        className="app-nav-link"
+                        activeClassName="is-active"
+                        onClick={closeSidebar}
+                    />
+
+                    <MenuLink
+                        name="Profile" 
+                        icon="fas fa-user-pen" 
+                        to={`${AppRoutes.private.root}/${AppRoutes.private.profile}`}
+                        className="app-nav-link"
+                        activeClassName="is-active"
+                        onClick={closeSidebar}
+                    />
+
+                    <MenuLink
+                        name="Logout" 
+                        icon="fas fa-arrow-right-from-bracket" 
+                        to={`${AppRoutes.login}`}
+                        className="app-nav-link mt-6"
+                        onClick={() => {
+                            logout();
+                            closeSidebar();
+                        }}
+                    />
+                </nav>
+            </aside>
+
+            {sidebarOpen && (
+                <button
+                    aria-label="Close navigation"
+                    className="fixed inset-0 bg-black/30 z-20 lg:hidden"
+                    onClick={closeSidebar}
+                />
+            )}
+
+            <div className="app-main fade-in-up">
+                {isMobileView && !sidebarOpen && (
+                    <div className="app-topbar fixed left-3 top-3 z-50">
+                        <button
+                            className="btn-modern btn-secondary"
+                            onClick={() => setSidebarOpen(true)}
+                        >
+                            <i className="fas fa-bars mr-2" />
+                            Menu
+                        </button>
+                    </div>
+                )}
                 {children}
             </div>
-        </>
+        </div>
     )
 }

@@ -96,35 +96,34 @@ export const Profile = () => {
 
     return (
         <>
-            <div className="ml-64 p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">Profile</h1>
+            <section className="app-page fade-in-up">
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 className="page-title">Profile</h1>
+                        <p className="page-subtitle">Gestiona tus datos, seguridad y preferencias de notificacion.</p>
+                    </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-6 border-b border-gray-200">
+                <div className="soft-card overflow-hidden rounded-2xl">
+                    <div className="border-b border-gray-200 p-6">
                         <div className="flex flex-col md:flex-row items-center">
                             <div className="mb-4 md:mb-0 md:mr-6">
                                 <div className="relative">
                                     <img
                                         src="https://avatar.iran.liara.run/public/15"
                                         alt="Profile"
-                                        className="w-32 h-32 rounded-full"
+                                        className="h-32 w-32 rounded-3xl border-4 border-white object-cover shadow-lg"
                                     />
-                                    {/* <button className="absolute bottom-0 right-0 bg-emerald-600 text-white p-2 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                                        <i className="fas fa-camera"></i>
-                                    </button> */}
                                 </div>
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-800">{`${data?.firstName} ${data?.lastName}`}</h2>
                                 <p className="text-gray-600">{data?.email}</p>
-                                {/* <p className="text-sm text-gray-500 mt-1">Member since: January 2025</p> */}
                             </div>
                         </div>
                     </div>
 
                     <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
+                        <h3 className="mb-4 text-lg font-semibold text-gray-800">Personal Information</h3>
 
                         {isLoading ? (<FormSkeleton />)
                             : error ? (
@@ -137,34 +136,34 @@ export const Profile = () => {
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
-                                            <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="first-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 First Name
                                             </label>
                                             <InputForm name='firstName' control={control} type='text' error={errors.firstName as FieldError} />
                                         </div>
                                         <div>
-                                            <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="last-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Last Name
                                             </label>
                                             <InputForm name='lastName' control={control} type='text' error={errors.lastName as FieldError} />
                                         </div>
                                         <div>
-                                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="email" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Email
                                             </label>
                                             <InputForm name='email' control={control} type='email' error={errors.email as FieldError} />
                                         </div>
                                         <div>
-                                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="phone" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Phone
                                             </label>
                                             <InputForm name='phoneNumber' control={control} type='tel' error={errors.phoneNumber as FieldError} />
                                         </div>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h3>
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Change Password</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
-                                            <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="current-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Current Password
                                             </label>
                                             <InputForm name='currentPassword' control={control} type='password' error={errors.currentPassword as FieldError}
@@ -172,23 +171,23 @@ export const Profile = () => {
                                         </div>
                                         <div></div>
                                         <div>
-                                            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="new-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 New Password
                                             </label>
                                             <InputForm name='password' control={control} type='password' error={errors.password as FieldError}
                                                 placeholder="••••••••" />
                                         </div>
                                         <div>
-                                            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+                                            <label htmlFor="confirm-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                                 Confirm New Password
                                             </label>
                                             <InputForm name='confirmPassword' control={control} type='password' error={errors.confirmPassword as FieldError}
                                                 placeholder="••••••••" />
                                         </div>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Preferences</h3>
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Preferences</h3>
                                     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="twoFactorEnabled"
                                                 control={control}
@@ -196,7 +195,7 @@ export const Profile = () => {
                                                 error={errors.twoFactorEnabled}
                                             />
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="receiveEmailNotifications"
                                                 control={control}
@@ -204,7 +203,7 @@ export const Profile = () => {
                                                 error={errors.receiveEmailNotifications}
                                             />
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="receiveMonthlyExpenseReport"
                                                 control={control}
@@ -212,7 +211,7 @@ export const Profile = () => {
                                                 error={errors.receiveMonthlyExpenseReport}
                                             />
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="receiveWeeklyExpenseReport"
                                                 control={control}
@@ -220,7 +219,7 @@ export const Profile = () => {
                                                 error={errors.receiveWeeklyExpenseReport}
                                             />
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="receiveBiweeklyExpenseReport"
                                                 control={control}
@@ -228,7 +227,7 @@ export const Profile = () => {
                                                 error={errors.receiveBiweeklyExpenseReport}
                                             />
                                         </div>
-                                        <div className="flex items-center">
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="sendWeeklyTransactionBackup"
                                                 control={control}
@@ -258,14 +257,14 @@ export const Profile = () => {
                                         <button
                                             type="button"
                                             onClick={handleCancel}
-                                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 cursor-pointer"
+                                            className="btn-modern btn-secondary"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={!isDirty}
-                                            className={`px-4 py-2  border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer' : 'bg-emerald-800'}`}
+                                            className={`btn-modern ${isDirty ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
                                         >
                                             {updateIsPending ? 'Guardando...' : ' Save Changes'}
                                         </button>
@@ -274,7 +273,7 @@ export const Profile = () => {
                         }
                     </div>
                 </div>
-            </div>
+            </section>
         </>
     );
 };

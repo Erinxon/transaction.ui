@@ -27,14 +27,14 @@ export const CheckboxForm = <T extends FieldValues>({
         name={name}
         control={control}
         render={({ field }) => (
-          <label className="inline-flex items-center space-x-2">
+          <label className="inline-flex cursor-pointer items-center space-x-2">
             <input
               type="checkbox"
               checked={field.value ?? false}
               onChange={(e) => field.onChange(e.target.checked)}
-              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
             />
-            <span className="ml-2 block text-sm text-gray-700">{label}</span>
+            <span className="ml-2 block text-sm text-gray-700 leading-tight">{label}</span>
           </label>
         )}
       />

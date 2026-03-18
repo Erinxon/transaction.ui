@@ -68,27 +68,24 @@ export const Dashboard = () => {
 
   return (
     <>
-      <div className="ml-64 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer"
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filtros Avanzados
-              {activeFiltersCount > 0 && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-            <div className="flex items-center">
-              <span className="mr-2 text-sm text-gray-600">Welcome, User</span>
-              <img src="https://avatar.iran.liara.run/public/15" alt="Profile" className="w-10 h-10 rounded-full" />
-            </div>
+      <section className="app-page fade-in-up">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">Resumen en tiempo real de ingresos, gastos y movimientos recientes.</p>
           </div>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="btn-modern btn-secondary relative inline-flex items-center"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Filtros avanzados
+            {activeFiltersCount > 0 && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {isLoading ? (
@@ -99,28 +96,28 @@ export const Dashboard = () => {
           <div className="text-red-500">Error loading data</div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
               <DashboardCard
                 title="Balance Total  (Aproximado)"
                 value={<FormattedNumber value={((data?.income ?? 0) - (data?.expenses ?? 0))} isAmount={true} />}
-                color="green"
+                color="neutral"
               >
-                <i className="fas fa-wallet text-emerald-600"></i>
+                <i className="fas fa-wallet"></i>
               </DashboardCard>
               <DashboardCard title="Ingresos" value={<FormattedNumber value={data?.income ?? 0} isAmount={true} />} color="green">
-                <i className="fas fa-arrow-up text-green-600"></i>
+                <i className="fas fa-arrow-up"></i>
               </DashboardCard>
               <DashboardCard title="Gastos" value={<FormattedNumber value={data?.expenses ?? 0} isAmount={true} />} color="red">
-                <i className="fas fa-arrow-down text-red-600"></i>
+                <i className="fas fa-arrow-down"></i>
               </DashboardCard>
             </div>
           </>
         )}
 
-        <div className="grid grid-cols-2  gap-4">
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="soft-card rounded-2xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Transactions</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Tendencia mensual</h2>
             </div>
             {
               isLoadingYearly ? <ChartSkeleton /> :
@@ -130,32 +127,32 @@ export const Dashboard = () => {
           </div>
 
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="soft-card rounded-2xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Recent Transactions</h2>
-              <a onClick={navigateToList} className="text-sm text-emerald-600 hover:text-emerald-500 cursor-pointer">
-                View All
-              </a>
+              <h2 className="text-lg font-semibold text-gray-900">Últimos movimientos</h2>
+              <button onClick={navigateToList} className="btn-modern btn-ghost text-sm">
+                Ver todo
+              </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="table-modern">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-left">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-left">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-left">
                       Description
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="text-left">
                       Amount
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {isLoadingTransactions ? (
                     <SkeletonRow quantity={4} />
                   ) : errorTransactions ? (
@@ -167,17 +164,17 @@ export const Dashboard = () => {
                   ) : (
                     (transactionsData ?? [])?.map((x) => (
                       <tr key={x.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="whitespace-nowrap text-sm text-gray-600">
                           {new Date(x.date).toLocaleDateString()}
                         </td>
-                        <td
-                          className={`px-6 py-4 whitespace-nowrap text-sm bg-text-${x.transactionTypeId === 1 ? "green" : "red"}-100 text-${x.transactionTypeId === 1 ? "green" : "red"}-600`}
-                        >
-                          {x.category}
+                        <td className="whitespace-nowrap text-sm">
+                          <span className={`status-chip ${x.transactionTypeId === 1 ? "status-income" : "status-expense"}`}>
+                            {x.category}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{x.description}</td>
+                        <td className="max-w-48 truncate whitespace-nowrap text-sm text-gray-600">{x.description}</td>
                         <td
-                          className={`px-6 py-4 whitespace-nowrap text-sm text-${x.transactionTypeId === 1 ? "green" : "red"}-600`}
+                          className={`whitespace-nowrap text-sm font-semibold ${x.transactionTypeId === 1 ? "text-emerald-700" : "text-rose-700"}`}
                         >
                           <FormattedNumber value={x.amount} isAmount={true} />
                         </td>
@@ -189,8 +186,7 @@ export const Dashboard = () => {
             </div>
           </div>
         </div>
-
-      </div>
+      </section>
 
       <AdvancedFilterModal filters={filters} onFiltersChange={handleFiltersChange} />
     </>

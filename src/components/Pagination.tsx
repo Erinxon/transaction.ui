@@ -45,20 +45,20 @@ const Pagination = ({
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
     return (
-        <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <div className="flex items-center gap-4 text-sm text-gray-700">
+        <div className="border-t border-gray-200/70 bg-white/80 px-4 py-3 sm:px-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                     <span>
-                        Showing <span className="font-medium">{startItem}</span> to{" "}
-                        <span className="font-medium">{endItem}</span> of{" "}
-                        <span className="font-medium">{totalItems}</span> results
+                        Showing <span className="font-semibold text-gray-900">{startItem}</span> to{" "}
+                        <span className="font-semibold text-gray-900">{endItem}</span> of{" "}
+                        <span className="font-semibold text-gray-900">{totalItems}</span> results
                     </span>
                     <label className="flex items-center gap-1">
                         Rows per page:
                         <select
                             value={itemsPerPage}
                             onChange={(e) => onItemsPerPageChange(parseInt(e.target.value))}
-                            className="border border-gray-300 rounded-md text-sm px-2 py-1"
+                            className="select-modern max-w-20 py-1"
                         >
                             {perPageOptions.map((option) => (
                                 <option key={option} value={option}>
@@ -71,13 +71,13 @@ const Pagination = ({
 
                 <div>
                     <nav
-                        className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                        className="relative z-0 inline-flex -space-x-px rounded-xl border border-gray-200 bg-white shadow-sm"
                         aria-label="Pagination"
                     >
                         <button
                             disabled={currentPage === 1}
                             onClick={() => onPageChange(currentPage - 1)}
-                            className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 ${currentPage > 1 ? 'cursor-pointer' : ''}`}
+                            className={`relative inline-flex items-center rounded-l-xl border-r border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 ${currentPage > 1 ? 'cursor-pointer' : ''}`}
                         >
                             <span className="sr-only">Previous</span>
                             <i className="fas fa-chevron-left"></i>
@@ -88,10 +88,10 @@ const Pagination = ({
                                 <button
                                     key={index}
                                     onClick={() => onPageChange(page)}
-                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                    className={`relative inline-flex items-center border-r border-gray-200 px-4 py-2 text-sm font-medium ${
                                         page === currentPage
-                                            ? "bg-emerald-50 text-emerald-600 border-gray-300 hover:bg-emerald-100"
-                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 cursor-pointer"
+                                            ? "bg-emerald-50 text-emerald-700"
+                                            : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
                                     }`}
                                 >
                                     {page}
@@ -99,7 +99,7 @@ const Pagination = ({
                             ) : (
                                 <span
                                     key={index}
-                                    className="inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-sm text-gray-500"
+                                    className="inline-flex items-center border-r border-gray-200 bg-white px-3 py-2 text-sm text-gray-500"
                                 >
                                     ...
                                 </span>
@@ -109,7 +109,7 @@ const Pagination = ({
                         <button
                             disabled={currentPage === totalPages}
                             onClick={() => onPageChange(currentPage + 1)}
-                            className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 ${currentPage !== totalPages ? 'cursor-pointer' : ''}`}
+                            className={`relative inline-flex items-center rounded-r-xl bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 ${currentPage !== totalPages ? 'cursor-pointer' : ''}`}
                         >
                             <span className="sr-only">Next</span>
                             <i className="fas fa-chevron-right"></i>
