@@ -47,6 +47,10 @@ export const Login = () => {
     })
 
     const onSubmit: SubmitHandler<FormValues> = (formData) => {
+        if (isPending) {
+            return;
+        }
+
         if (isTwoFactorStep) {
             if (!formData.code?.trim()) {
                 setErrorMsg('Debes ingresar el código de verificación');
@@ -137,7 +141,11 @@ export const Login = () => {
                             </a>
                         </div>
 
-                        <button type='submit' className="btn-modern btn-primary w-full py-3">
+                        <button
+                            type='submit'
+                            disabled={isPending}
+                            className={`btn-modern btn-primary w-full py-3 ${isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
                             {isPending ? 'Procesando...' : isTwoFactorStep ? 'Verificar código' : ' Sign in'}
                         </button>
 
