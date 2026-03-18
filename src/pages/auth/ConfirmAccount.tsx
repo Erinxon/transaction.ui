@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import './ConfirmAccount.style.css';
 import { useEffect, useState } from 'react';
 import { confirmAccount } from '../../core/auth/services/confirmAccountApi';
@@ -10,7 +10,6 @@ const ConfirmAccount = () => {
     const userId = searchParams.get('userId');
     const token = searchParams.get('token');
 
-    const queryClient = useQueryClient();
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
 
     const { mutate: confirmAccountMutate, isPending } = useMutation({
@@ -165,6 +164,16 @@ const ConfirmAccount = () => {
                             <p className="text-gray-600 mb-8">
                                 Por favor espera mientras confirmamos tu dirección de correo electrónico.
                             </p>
+
+                            {errorMsg.length > 0 && (
+                                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-left text-sm text-red-700">
+                                    <ul className="list-disc list-inside">
+                                        {errorMsg.map((msg, idx) => (
+                                            <li key={idx}>{msg}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </div>}
 

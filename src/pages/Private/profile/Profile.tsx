@@ -18,10 +18,21 @@ export const Profile = () => {
         queryFn: () => getProfile(),
     });
 
-    const { control, handleSubmit, setValue, formState: { errors, isDirty } } = useForm({
+    const { control, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm({
         resolver: zodResolver(UpdateProfileSchema),
         defaultValues: UpdateProfileSchemaFormValuesEmptyValue
     });
+
+    const receiveEmailNotifications = watch('receiveEmailNotifications');
+
+    useEffect(() => {
+        if (!receiveEmailNotifications) {
+            setValue('receiveMonthlyExpenseReport', false);
+            setValue('receiveWeeklyExpenseReport', false);
+            setValue('receiveBiweeklyExpenseReport', false);
+            setValue('sendWeeklyTransactionBackup', false);
+        }
+    }, [receiveEmailNotifications, setValue]);
 
     const { mutate: updateMutate, isPending: updateIsPending } = useMutation({
         mutationFn: updateProfile,
@@ -33,17 +44,19 @@ export const Profile = () => {
     });
 
     const onSubmit: SubmitHandler<UpdateProfileSchemaFormValues> = (formData) => {
+        const hasEmailNotifications = formData.receiveEmailNotifications ?? false;
+
         updateMutate({
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber ?? '',
             twoFactorEnabled: formData.twoFactorEnabled ?? false,
-            receiveEmailNotifications: formData.receiveEmailNotifications ?? false,
-            receiveMonthlyExpenseReport: formData.receiveMonthlyExpenseReport ?? false,
-            receiveWeeklyExpenseReport: formData.receiveWeeklyExpenseReport ?? false,
-            receiveBiweeklyExpenseReport: formData.receiveBiweeklyExpenseReport ?? false,
-            sendWeeklyTransactionBackup: formData.sendWeeklyTransactionBackup ?? false,
+            receiveEmailNotifications: hasEmailNotifications,
+            receiveMonthlyExpenseReport: hasEmailNotifications ? (formData.receiveMonthlyExpenseReport ?? false) : false,
+            receiveWeeklyExpenseReport: hasEmailNotifications ? (formData.receiveWeeklyExpenseReport ?? false) : false,
+            receiveBiweeklyExpenseReport: hasEmailNotifications ? (formData.receiveBiweeklyExpenseReport ?? false) : false,
+            sendWeeklyTransactionBackup: hasEmailNotifications ? (formData.sendWeeklyTransactionBackup ?? false) : false,
             changePassword: formData?.currentPassword && formData?.password && formData?.confirmPassword ? {
                 currentPassword: formData.currentPassword,
                 newPassword: formData.password
@@ -203,38 +216,42 @@ export const Profile = () => {
                                                 error={errors.receiveEmailNotifications}
                                             />
                                         </div>
-                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                            <CheckboxForm
-                                                name="receiveMonthlyExpenseReport"
-                                                control={control}
-                                                label="Receive monthly expense report"
-                                                error={errors.receiveMonthlyExpenseReport}
-                                            />
-                                        </div>
-                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                            <CheckboxForm
-                                                name="receiveWeeklyExpenseReport"
-                                                control={control}
-                                                label="Receive weekly expense report"
-                                                error={errors.receiveWeeklyExpenseReport}
-                                            />
-                                        </div>
-                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                            <CheckboxForm
-                                                name="receiveBiweeklyExpenseReport"
-                                                control={control}
-                                                label="Receive biweekly expense report"
-                                                error={errors.receiveBiweeklyExpenseReport}
-                                            />
-                                        </div>
-                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                            <CheckboxForm
-                                                name="sendWeeklyTransactionBackup"
-                                                control={control}
-                                                label="  Send weekly transaction backup"
-                                                error={errors.sendWeeklyTransactionBackup}
-                                            />
-                                        </div>
+                                        {receiveEmailNotifications && (
+                                            <>
+                                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                                    <CheckboxForm
+                                                        name="receiveMonthlyExpenseReport"
+                                                        control={control}
+                                                        label="Receive monthly expense report"
+                                                        error={errors.receiveMonthlyExpenseReport}
+                                                    />
+                                                </div>
+                                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                                    <CheckboxForm
+                                                        name="receiveWeeklyExpenseReport"
+                                                        control={control}
+                                                        label="Receive weekly expense report"
+                                                        error={errors.receiveWeeklyExpenseReport}
+                                                    />
+                                                </div>
+                                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                                    <CheckboxForm
+                                                        name="receiveBiweeklyExpenseReport"
+                                                        control={control}
+                                                        label="Receive biweekly expense report"
+                                                        error={errors.receiveBiweeklyExpenseReport}
+                                                    />
+                                                </div>
+                                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                                    <CheckboxForm
+                                                        name="sendWeeklyTransactionBackup"
+                                                        control={control}
+                                                        label="Send weekly transaction backup"
+                                                        error={errors.sendWeeklyTransactionBackup}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                     {errorMsg.length > 0 && (

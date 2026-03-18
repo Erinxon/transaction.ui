@@ -1,7 +1,11 @@
 import api from '../../api/axios';
 import type {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   LoginRequest,
   LoginResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   RegisterRequest,
   RegisterResponse,
   SendTwoFactorCodeRequest,
@@ -27,5 +31,19 @@ export const verifyTwoFactorCode = async (
 
 export const register = async (user: RegisterRequest): Promise<RegisterResponse> => {
   const response = await api.post('/auth/register', user);
+  return response.data;
+};
+
+export const forgotPassword = async (
+  request: ForgotPasswordRequest
+): Promise<ForgotPasswordResponse> => {
+  const response = await api.post('/auth/forgot-password', request);
+  return response.data;
+};
+
+export const resetPassword = async (
+  request: ResetPasswordRequest
+): Promise<ResetPasswordResponse> => {
+  const response = await api.post('/auth/reset-password', request);
   return response.data;
 };

@@ -91,6 +91,10 @@ export const Login = () => {
         navigate('/register', { replace: true });  
     }
 
+    const handleForgotPassword = () => {
+        navigate('/forgot-password', { replace: true });
+    }
+
     return (
         <>
             <div className="auth-shell fade-in-up">
@@ -123,6 +127,15 @@ export const Login = () => {
                         )}
 
                         <div className="mb-6" />
+
+                        <div className="mb-4 text-right">
+                            <a
+                                onClick={handleForgotPassword}
+                                className="cursor-pointer text-sm font-medium text-emerald-700 hover:text-emerald-600"
+                            >
+                                Forgot your password?
+                            </a>
+                        </div>
 
                         <button type='submit' className="btn-modern btn-primary w-full py-3">
                             {isPending ? 'Procesando...' : isTwoFactorStep ? 'Verificar código' : ' Sign in'}

@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm, type FieldError, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AxiosError } from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, CheckboxForm, InputForm } from "../../components";
 import { RegisterSchema, RegisterSchemaFormValuesEmptyValue, type RegisterSchemaFormValues } from "../../models/shemas/register.shema";
 import { register } from "../../core/auth/services/authApi";
@@ -12,10 +12,21 @@ export const Register = () => {
     const navigate = useNavigate();
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
 
-    const { control, handleSubmit, formState: { errors, isDirty } } = useForm({
+    const { control, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm({
         resolver: zodResolver(RegisterSchema),
         defaultValues: RegisterSchemaFormValuesEmptyValue
     });
+
+    const receiveEmailNotifications = watch('receiveEmailNotifications');
+
+    useEffect(() => {
+        if (!receiveEmailNotifications) {
+            setValue('receiveMonthlyExpenseReport', false);
+            setValue('receiveWeeklyExpenseReport', false);
+            setValue('receiveBiweeklyExpenseReport', false);
+            setValue('sendWeeklyTransactionBackup', false);
+        }
+    }, [receiveEmailNotifications, setValue]);
 
     const { mutate: updateMutate, isPending: updateIsPending } = useMutation({
         mutationFn: register,
@@ -26,16 +37,18 @@ export const Register = () => {
     });
 
     const onSubmit: SubmitHandler<RegisterSchemaFormValues> = (formData) => {
+        const hasEmailNotifications = formData.receiveEmailNotifications ?? false;
+
         updateMutate({
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
             phoneNumber: formData.phoneNumber ?? '',
-            receiveEmailNotifications: formData.receiveEmailNotifications ?? false,
-            receiveMonthlyExpenseReport: formData.receiveMonthlyExpenseReport ?? false,
-            receiveWeeklyExpenseReport: formData.receiveWeeklyExpenseReport ?? false,
-            receiveBiweeklyExpenseReport: formData.receiveBiweeklyExpenseReport ?? false,
-            sendWeeklyTransactionBackup: formData.sendWeeklyTransactionBackup ?? false,
+            receiveEmailNotifications: hasEmailNotifications,
+            receiveMonthlyExpenseReport: hasEmailNotifications ? (formData.receiveMonthlyExpenseReport ?? false) : false,
+            receiveWeeklyExpenseReport: hasEmailNotifications ? (formData.receiveWeeklyExpenseReport ?? false) : false,
+            receiveBiweeklyExpenseReport: hasEmailNotifications ? (formData.receiveBiweeklyExpenseReport ?? false) : false,
+            sendWeeklyTransactionBackup: hasEmailNotifications ? (formData.sendWeeklyTransactionBackup ?? false) : false,
             password: formData.password ?? ''
         }, {
             onError: (error) => {
@@ -124,38 +137,42 @@ export const Register = () => {
                                         error={errors.receiveEmailNotifications}
                                     />
                                 </div>
-                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                    <CheckboxForm
-                                        name="receiveMonthlyExpenseReport"
-                                        control={control}
-                                        label="Receive monthly expense report"
-                                        error={errors.receiveMonthlyExpenseReport}
-                                    />
-                                </div>
-                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                    <CheckboxForm
-                                        name="receiveWeeklyExpenseReport"
-                                        control={control}
-                                        label="Receive weekly expense report"
-                                        error={errors.receiveWeeklyExpenseReport}
-                                    />
-                                </div>
-                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                    <CheckboxForm
-                                        name="receiveBiweeklyExpenseReport"
-                                        control={control}
-                                        label="Receive biweekly expense report"
-                                        error={errors.receiveBiweeklyExpenseReport}
-                                    />
-                                </div>
-                                <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
-                                    <CheckboxForm
-                                        name="sendWeeklyTransactionBackup"
-                                        control={control}
-                                        label="  Send weekly transaction backup"
-                                        error={errors.sendWeeklyTransactionBackup}
-                                    />
-                                </div>
+                                {receiveEmailNotifications && (
+                                    <>
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                            <CheckboxForm
+                                                name="receiveMonthlyExpenseReport"
+                                                control={control}
+                                                label="Receive monthly expense report"
+                                                error={errors.receiveMonthlyExpenseReport}
+                                            />
+                                        </div>
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                            <CheckboxForm
+                                                name="receiveWeeklyExpenseReport"
+                                                control={control}
+                                                label="Receive weekly expense report"
+                                                error={errors.receiveWeeklyExpenseReport}
+                                            />
+                                        </div>
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                            <CheckboxForm
+                                                name="receiveBiweeklyExpenseReport"
+                                                control={control}
+                                                label="Receive biweekly expense report"
+                                                error={errors.receiveBiweeklyExpenseReport}
+                                            />
+                                        </div>
+                                        <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
+                                            <CheckboxForm
+                                                name="sendWeeklyTransactionBackup"
+                                                control={control}
+                                                label="Send weekly transaction backup"
+                                                error={errors.sendWeeklyTransactionBackup}
+                                            />
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {errorMsg.length > 0 && (

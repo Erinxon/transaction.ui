@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route } from 'react-router-dom'
 import { RoutesWithNotFound } from './components'
 import { AppRoutes } from './models/AppRoutes'
 import { PrivateGuard } from './guard/PrivateGuard'
-import { Login, Register } from './pages/auth'
+import { ForgotPassword, Login, Register, ResetPassword } from './pages/auth'
 import { PrivateRouter } from './pages/Private/PrivateRouter'
 import ConfirmAccount from './pages/auth/ConfirmAccount'
 
@@ -14,6 +14,8 @@ export const AppRouter = () => {
         <Route path={AppRoutes.login} element={<Login />} />
         <Route path={AppRoutes.register} element={<Register />} />
         <Route path={AppRoutes.confirmAccount} element={<ConfirmAccount />} />
+        <Route path={AppRoutes.forgotPassword} element={<ForgotPassword />} />
+        <Route path={AppRoutes.resetPassword} element={<ResetPassword />} />
         {/* Private Routes */}
         <Route element={<PrivateGuard />}>
           <Route path={`${AppRoutes.private.root}/*`} element={<PrivateRouter />} />

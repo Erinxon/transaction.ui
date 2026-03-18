@@ -1,3 +1,5 @@
 export * from './login'
 export * from './register'
 export * from './ConfirmAccount'
+export * from './ForgotPassword'
+export * from './ResetPassword'
