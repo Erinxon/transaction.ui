@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert } from '../../../components';
 import Pagination from '../../../components/Pagination';
+import { Modal } from '../../../components/Modal/Modal';
+import { useModalContext } from '../../../components/Modal/context';
 import { getAdminLogs, getLogStatistics } from '../../../core/admin/services/adminApi';
-import type { AdminLogsRequest, DateRangeFilter, LogLevel } from '../../../core/admin/types/admin.types';
+import type { AdminLogsRequest, DateRangeFilter, LogLevel, SystemLog } from '../../../core/admin/types/admin.types';
 
 const toRequest = (
   from: string,
@@ -23,7 +25,36 @@ const toRequest = (
   pageSize,
 });
 
+const getLevelChipClass = (logLevel: string) => {
+  switch (logLevel) {
+    case 'Information':
+      return 'status-income';
+    case 'Warning':
+      return 'status-expense';
+    case 'Error':
+      return 'status-expense';
+    case 'Fatal':
+      return 'status-expense';
+    default:
+      return 'status-income';
+  }
+};
+
+const formatJsonLike = (value: string | null) => {
+  if (!value) {
+    return '-';
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return value;
+  }
+};
+
 export const AdminLogs = () => {
+  const { setIsOpen } = useModalContext();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [level, setLevel] = useState('');
@@ -31,6 +62,7 @@ export const AdminLogs = () => {
   const [requestPath, setRequestPath] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
 
   const request = useMemo(
     () => toRequest(from, to, level, userId, requestPath, page, pageSize),
@@ -43,6 +75,26 @@ export const AdminLogs = () => {
     queryKey: ['adminLogs', request],
     queryFn: ({ queryKey }) => getAdminLogs(queryKey[1] as AdminLogsRequest),
   });
+
+  useEffect(() => {
+    if (!data || data.length === 0) {
+      setSelectedLogId(null);
+      return;
+    }
+
+    const stillExists = data.some((logItem) => logItem.id === selectedLogId);
+    if (!stillExists) {
+      setSelectedLogId(data[0].id);
+    }
+  }, [data, selectedLogId]);
+
+  const selectedLog: SystemLog | null = useMemo(() => {
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    return data.find((logItem) => logItem.id === selectedLogId) ?? data[0];
+  }, [data, selectedLogId]);
 
   const estimatedTotalItems = useMemo(() => {
     const items = data ?? [];
@@ -62,6 +114,11 @@ export const AdminLogs = () => {
     queryKey: ['adminLogsStats', dateFilter],
     queryFn: ({ queryKey }) => getLogStatistics(queryKey[1] as DateRangeFilter),
   });
+
+  const openLogDetail = (logId: string) => {
+    setSelectedLogId(logId);
+    setIsOpen(true);
+  };
 
   return (
     <section className="app-page fade-in-up">
@@ -153,20 +210,31 @@ export const AdminLogs = () => {
                   <th className="text-left">Metodo</th>
                   <th className="text-left">Status</th>
                   <th className="text-left">Usuario</th>
+                  <th className="text-left">IP</th>
+                  <th className="text-left">Tiempo</th>
+                  <th className="text-left">Detalle</th>
                 </tr>
               </thead>
               <tbody>
                 {(data ?? []).map((logItem) => (
-                  <tr key={logItem.id}>
+                  <tr
+                    key={logItem.id}
+                    className={`${selectedLog?.id === logItem.id ? 'bg-emerald-50/70' : ''} cursor-pointer transition-colors duration-150 hover:bg-emerald-100/70`}
+                    onClick={() => openLogDetail(logItem.id)}
+                    title="Haz clic para ver el detalle"
+                  >
                     <td className="whitespace-nowrap text-sm text-gray-600">{new Date(logItem.timestamp).toLocaleString()}</td>
                     <td className="text-sm">
-                      <span className="status-chip status-expense">{logItem.level}</span>
+                      <span className={`status-chip ${getLevelChipClass(logItem.level)}`}>{logItem.level}</span>
                     </td>
                     <td className="max-w-80 truncate text-sm text-gray-800">{logItem.message}</td>
                     <td className="max-w-72 truncate text-sm text-gray-600">{logItem.requestPath ?? '-'}</td>
                     <td className="text-sm text-gray-600">{logItem.requestMethod ?? '-'}</td>
                     <td className="text-sm text-gray-600">{logItem.statusCode ?? '-'}</td>
                     <td className="text-sm text-gray-600">{logItem.userName ?? '-'}</td>
+                    <td className="max-w-52 truncate text-sm text-gray-600">{logItem.ipAddress ?? '-'}</td>
+                    <td className="text-sm text-gray-600">{logItem.responseTimeMs != null ? `${logItem.responseTimeMs} ms` : '-'}</td>
+                    <td className="text-sm font-medium text-emerald-700">Ver</td>
                   </tr>
                 ))}
               </tbody>
@@ -190,6 +258,85 @@ export const AdminLogs = () => {
           {isFetching && <p className="px-4 pb-3 text-xs text-gray-500">Actualizando datos...</p>}
         </div>
       )}
+
+      <Modal
+        title="Detalle del log"
+        description="Informacion completa del registro seleccionado"
+      >
+        {!selectedLog ? (
+          <p className="text-sm text-gray-600">No hay log seleccionado.</p>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className={`status-chip ${getLevelChipClass(selectedLog.level)}`}>{selectedLog.level}</span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+                {selectedLog.requestMethod ?? 'N/A'}
+              </span>
+              <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-700">
+                Status: {selectedLog.statusCode ?? 'N/A'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Id</p>
+                <p className="mt-1 break-all text-sm text-gray-800">{selectedLog.id}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Timestamp</p>
+                <p className="mt-1 text-sm text-gray-800">{new Date(selectedLog.timestamp).toLocaleString()}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Response Time</p>
+                <p className="mt-1 text-sm text-gray-800">{selectedLog.responseTimeMs != null ? `${selectedLog.responseTimeMs} ms` : '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Request Path</p>
+                <p className="mt-1 break-all text-sm text-gray-800">{selectedLog.requestPath ?? '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">User Name</p>
+                <p className="mt-1 text-sm text-gray-800">{selectedLog.userName ?? '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500">User Id</p>
+                <p className="mt-1 break-all text-sm text-gray-800">{selectedLog.userId ?? '-'}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 md:col-span-2">
+                <p className="text-xs uppercase tracking-wide text-gray-500">IP Address</p>
+                <p className="mt-1 text-sm text-gray-800">{selectedLog.ipAddress ?? '-'}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">Message</p>
+              <pre className="max-h-52 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 whitespace-pre-wrap break-words">
+                {selectedLog.message || '-'}
+              </pre>
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">Exception</p>
+              <pre className="max-h-52 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 whitespace-pre-wrap break-words">
+                {selectedLog.exception || '-'}
+              </pre>
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">Properties</p>
+              <pre className="max-h-56 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-800 whitespace-pre-wrap break-words">
+                {formatJsonLike(selectedLog.properties)}
+              </pre>
+            </div>
+
+            <div className="flex justify-end">
+              <button className="btn-modern btn-secondary" onClick={() => setIsOpen(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </section>
   );
 };
