@@ -72,6 +72,11 @@ export const deactivateUser = async (userId: string): Promise<AdminActionRespons
   return response.data;
 };
 
+export const confirmUserEmail = async (userId: string): Promise<AdminActionResponse> => {
+  const response = await api.post(`/api/admin/users/${userId}/confirm-email`);
+  return response.data;
+};
+
 export const getUserStatistics = async (userId: string): Promise<UserStatisticsResponse> => {
   const response = await api.get(`/api/admin/users/${userId}/statistics`);
   return response.data;

@@ -4,6 +4,7 @@ import { Alert } from '../../../components';
 import Pagination from '../../../components/Pagination';
 import {
   activateUser,
+  confirmUserEmail,
   deactivateUser,
   getAdminUserById,
   getAdminUsers,
@@ -82,6 +83,15 @@ export const AdminUsers = () => {
     },
   });
 
+  const { mutate: confirmEmailMutate, isPending: isConfirmingEmail } = useMutation({
+    mutationFn: confirmUserEmail,
+    onSuccess: (response) => {
+      setFeedback(response.message || 'Correo confirmado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['adminUserDetail', selectedUserId] });
+    },
+  });
+
   return (
     <section className="app-page fade-in-up">
       <div className="mb-6">
@@ -123,6 +133,7 @@ export const AdminUsers = () => {
                     <tr>
                       <th className="text-left">Usuario</th>
                       <th className="text-left">Email</th>
+                      <th className="text-left">Correo</th>
                       <th className="text-left">Admin</th>
                       <th className="text-left">Estado</th>
                     </tr>
@@ -139,6 +150,11 @@ export const AdminUsers = () => {
                           <div className="text-xs text-gray-500">@{user.userName}</div>
                         </td>
                         <td className="text-sm text-gray-600">{user.email}</td>
+                        <td className="text-sm">
+                          <span className={`status-chip ${user.emailConfirmed ? 'status-income' : 'status-expense'}`}>
+                            {user.emailConfirmed ? 'Confirmado' : 'Pendiente'}
+                          </span>
+                        </td>
                         <td className="text-sm text-gray-700">{user.isAdmin ? 'Si' : 'No'}</td>
                         <td className="text-sm">
                           <span className={`status-chip ${user.lockoutEnabled ? 'status-expense' : 'status-income'}`}>
@@ -202,18 +218,27 @@ export const AdminUsers = () => {
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   className="btn-modern btn-primary"
-                  disabled={isActivating || isDeactivating || !selectedUserId}
+                  disabled={isActivating || isDeactivating || isConfirmingEmail || !selectedUserId}
                   onClick={() => selectedUserId && activateMutate(selectedUserId)}
                 >
                   Activar
                 </button>
                 <button
                   className="btn-modern btn-secondary"
-                  disabled={isActivating || isDeactivating || !selectedUserId}
+                  disabled={isActivating || isDeactivating || isConfirmingEmail || !selectedUserId}
                   onClick={() => selectedUserId && deactivateMutate(selectedUserId)}
                 >
                   Desactivar
                 </button>
+                {!userDetail?.emailConfirmed && (
+                  <button
+                    className="btn-modern btn-secondary"
+                    disabled={isActivating || isDeactivating || isConfirmingEmail || !selectedUserId}
+                    onClick={() => selectedUserId && confirmEmailMutate(selectedUserId)}
+                  >
+                    {isConfirmingEmail ? 'Confirmando...' : 'Confirmar correo'}
+                  </button>
+                )}
               </div>
 
               <div className="mt-5 border-t border-gray-200 pt-4">
