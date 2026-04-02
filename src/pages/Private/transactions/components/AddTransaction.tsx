@@ -34,7 +34,7 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
     const selectedTransactionType = watch("transactionTypeId");
     const selectedCategoryId = watch("categoryId");
 
-    const { data: categories } = useQuery({
+    const { data: categories, isFetched: isCategoriesFetched } = useQuery({
         queryKey: ["allCategories", selectedTransactionType],
         queryFn: () => getAllCategories(
             selectedTransactionType > 0 ? selectedTransactionType as TransactionType : undefined,
@@ -42,6 +42,10 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
     })
 
     useEffect(() => {
+        if (!isCategoriesFetched) {
+            return;
+        }
+
         if (!selectedCategoryId || selectedCategoryId <= 0) {
             return;
         }
@@ -50,7 +54,7 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
         if (!isValidCategory) {
             setValue("categoryId", 0, { shouldValidate: true });
         }
-    }, [categories, selectedCategoryId, setValue]);
+    }, [categories, isCategoriesFetched, selectedCategoryId, setValue]);
 
     const { mutate, isPending } = useMutation({
         mutationFn: createTransaction,
