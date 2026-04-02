@@ -10,6 +10,7 @@ import { TransactionType } from "../core/Category/types/category.types"
 interface AdvancedFilterModalProps {
   filters: DashboardFilter
   onFiltersChange: (filters: DashboardFilter) => void
+  hideDateFilters?: boolean
 }
 
 const dateRangeList: { key: string, name: string }[] = [
@@ -23,7 +24,7 @@ const dateRangeList: { key: string, name: string }[] = [
   { key: 'date_range', name: 'Rango de fechas' }
 ]
 
-export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilterModalProps) => {
+export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters = false }: AdvancedFilterModalProps) => {
   const [localFilters, setLocalFilters] = useState<DashboardFilter>(filters)
   const [isSelectOpen, setIsSelectOpen] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
@@ -147,48 +148,51 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
               </div>
             </div>
 
-            <div className="space-y-1 mt-2">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                Periodo predefinido
-              </label>
-              <div className="space-y-2">
-                <select id="date-range-preset" className="select-modern"
-                  value={localFilters.dateRange || ""}
-                  onChange={(e) => handleInputChange("dateRange", e.target.value)}>
-                  {dateRangeList?.map((dataRange) => <option key={dataRange.key} value={dataRange.key}>{dataRange.name}</option>)}
-                </select>
-              </div>
-            </div>
-            {/* Rango de fechas */}
-            {(localFilters.dateRange == 'date_range' || localFilters.dateRange == 'all') &&
-              <div className="mt-2">
-                <label className="flex items-center text-sm font-medium text-gray-700">
-                  <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                  Rango de Fechas
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500">Fecha inicio</label>
-                    <input
-                      type="date"
-                      value={localFilters.startDate || ""}
-                      onChange={(e) => handleInputChange("startDate", e.target.value)}
-                      className="field-modern"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500">Fecha fin</label>
-                    <input
-                      type="date"
-                      value={localFilters.endDate || ""}
-                      onChange={(e) => handleInputChange("endDate", e.target.value)}
-                      className="field-modern"
-                    />
+            {!hideDateFilters && (
+              <>
+                <div className="space-y-1 mt-2">
+                  <label className="flex items-center text-sm font-medium text-gray-700">
+                    <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                    Periodo predefinido
+                  </label>
+                  <div className="space-y-2">
+                    <select id="date-range-preset" className="select-modern"
+                      value={localFilters.dateRange || ""}
+                      onChange={(e) => handleInputChange("dateRange", e.target.value)}>
+                      {dateRangeList?.map((dataRange) => <option key={dataRange.key} value={dataRange.key}>{dataRange.name}</option>)}
+                    </select>
                   </div>
                 </div>
-              </div>
-            }
+                {(localFilters.dateRange == 'date_range' || localFilters.dateRange == 'all') &&
+                  <div className="mt-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700">
+                      <Calendar className="w-4 h-4 text-gray-500 mr-2" />
+                      Rango de Fechas
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-500">Fecha inicio</label>
+                        <input
+                          type="date"
+                          value={localFilters.startDate || ""}
+                          onChange={(e) => handleInputChange("startDate", e.target.value)}
+                          className="field-modern"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-gray-500">Fecha fin</label>
+                        <input
+                          type="date"
+                          value={localFilters.endDate || ""}
+                          onChange={(e) => handleInputChange("endDate", e.target.value)}
+                          className="field-modern"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                }
+              </>
+            )}
 
             {/* Tipo de transacción */}
             <div className="space-y-1 mt-2">
