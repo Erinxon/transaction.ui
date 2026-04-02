@@ -5,6 +5,7 @@ import { AdminDashboard } from './AdminDashboard';
 import { AdminLogs } from './AdminLogs';
 import { AdminAudit } from './AdminAudit';
 import { AdminUsers } from './AdminUsers';
+import { AdminCategories } from './AdminCategories';
 
 export const AdminRouter = () => {
   return (
@@ -14,6 +15,7 @@ export const AdminRouter = () => {
       <Route path={AppRoutes.private.admin.logs} element={<AdminLogs />} />
       <Route path={AppRoutes.private.admin.audit} element={<AdminAudit />} />
       <Route path={AppRoutes.private.admin.users} element={<AdminUsers />} />
+      <Route path={AppRoutes.private.admin.categories} element={<AdminCategories />} />
     </RoutesWithNotFound>
   );
 };

@@ -42,12 +42,9 @@ export interface CreateTransactionResponse {
   id: number;
 }
 
-export interface ImportRequest {
-  transactions: CreateTransactionRequest[];
-}
-
 export interface ImportResponse {
   insertedCount: number;
+  categoriesCreated: number;
 }
 
 export interface UpdateTransactionRequest {

@@ -30,7 +30,7 @@ export const InputForm = <T extends FieldValues>({ name, control, label, type, e
                             : (field.value ?? '');
 
                     return (
-                        <div className={isPasswordField ? 'password-field-wrapper' : undefined}>
+                        <div className={isPasswordField ? 'password-field-wrapper w-full' : 'w-full'}>
                             <input
                                 type={inputType}
                                 id={name}

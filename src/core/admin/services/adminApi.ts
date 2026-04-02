@@ -1,13 +1,18 @@
 import api from '../../api/axios';
 import type {
+  AdminCategoriesRequest,
+  AdminCategoriesResponse,
+  AdminCategory,
   AdminActionResponse,
   AdminAuditRequest,
   AdminDashboardResponse,
   AdminLogsRequest,
   AdminUser,
+  ImportCategoriesResponse,
   AdminUsersRequest,
   DateRangeFilter,
   SystemLog,
+  UpsertAdminCategoryRequest,
   UserAudit,
   UserStatisticsResponse,
 } from '../types/admin.types';
@@ -84,5 +89,59 @@ export const getUserStatistics = async (userId: string): Promise<UserStatisticsR
 
 export const getAdminDashboard = async (request: DateRangeFilter): Promise<AdminDashboardResponse> => {
   const response = await api.get('/api/admin/dashboard', { params: request });
+  return response.data;
+};
+
+export const createAdminCategory = async (
+  request: UpsertAdminCategoryRequest,
+): Promise<AdminCategory> => {
+  const response = await api.post('/api/admin/categories', request);
+  return response.data;
+};
+
+export const getAdminCategories = async (
+  request: AdminCategoriesRequest,
+): Promise<AdminCategoriesResponse> => {
+  const response = await api.get('/api/admin/categories', { params: request });
+  return response.data;
+};
+
+export const updateAdminCategory = async (
+  id: number,
+  request: UpsertAdminCategoryRequest,
+): Promise<AdminCategory> => {
+  const response = await api.put(`/api/admin/categories/${id}`, request);
+  return response.data;
+};
+
+export const deleteAdminCategory = async (id: number): Promise<AdminActionResponse> => {
+  const response = await api.delete(`/api/admin/categories/${id}`);
+  return response.data;
+};
+
+export const downloadAdminCategoriesTemplate = async (): Promise<Blob> => {
+  const response = await api.get('/api/admin/categories/template', {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+export const importAdminCategories = async (file: File): Promise<ImportCategoriesResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post('/api/admin/categories/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+};
+
+export const exportAdminCategories = async (): Promise<Blob> => {
+  const response = await api.get('/api/admin/categories/export', {
+    responseType: 'blob',
+  });
   return response.data;
 };

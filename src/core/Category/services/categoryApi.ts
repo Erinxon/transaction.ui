@@ -1,7 +1,11 @@
 import api from '../../api/axios';
-import type { CategoryResponde } from '../types/category.types';
+import type { CategoryResponse, TransactionType } from '../types/category.types';
 
-export const getAllCategories = async (): Promise<CategoryResponde[]> => {
-  const response = await api.get('/Category');
+export const getAllCategories = async (transactionType?: TransactionType): Promise<CategoryResponse[]> => {
+  const response = await api.get('/Category', {
+    params: {
+      transactionType,
+    },
+  });
   return response.data;
 };

@@ -5,8 +5,9 @@ import { UserTransactionFormValueEmptyValue, UserTransactionSchema, type UserTra
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AxiosError } from "axios";
 import { Alert, InputForm, RadioGroupForm, SelectForm, TextAreaForm } from "../../../../components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAllCategories } from "../../../../core/Category/services/categoryApi";
+import { TransactionType } from "../../../../core/Category/types/category.types";
 import type { TransactionResponse } from "../../../../core/transactions/types/transaction.types";
 import { useModalContext } from "../../../../components/Modal/context";
 
@@ -19,10 +20,37 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
     const { setIsOpen } = useModalContext()
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
 
-    const { data: categories } = useQuery({
-        queryKey: ["allCategories"],
-        queryFn: () => getAllCategories(),
+    const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+        resolver: zodResolver(UserTransactionSchema),
+        defaultValues: data?.id ? {
+            amount: data.amount,
+            date: data.date,
+            description: data.description,
+            transactionTypeId: data.transactionTypeId,
+            categoryId: data.categoryId
+        } : UserTransactionFormValueEmptyValue
     })
+
+    const selectedTransactionType = watch("transactionTypeId");
+    const selectedCategoryId = watch("categoryId");
+
+    const { data: categories } = useQuery({
+        queryKey: ["allCategories", selectedTransactionType],
+        queryFn: () => getAllCategories(
+            selectedTransactionType > 0 ? selectedTransactionType as TransactionType : undefined,
+        ),
+    })
+
+    useEffect(() => {
+        if (!selectedCategoryId || selectedCategoryId <= 0) {
+            return;
+        }
+
+        const isValidCategory = categories?.some((category) => category.id === selectedCategoryId) ?? false;
+        if (!isValidCategory) {
+            setValue("categoryId", 0, { shouldValidate: true });
+        }
+    }, [categories, selectedCategoryId, setValue]);
 
     const { mutate, isPending } = useMutation({
         mutationFn: createTransaction,
@@ -37,17 +65,6 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             onSuccess()
         }
     });
-
-    const { control, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(UserTransactionSchema),
-        defaultValues: data?.id ? {
-            amount: data.amount,
-            date: data.date,
-            description: data.description,
-            transactionTypeId: data.transactionTypeId,
-            categoryId: data.categoryId
-        } : UserTransactionFormValueEmptyValue
-    })
 
     const onSubmit: SubmitHandler<UserTransactionFormValues> = (formData) => {
         if (data?.id) {
@@ -119,7 +136,7 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
                 <div className="flex items-center rounded-xl border border-[#cedbd4] bg-[#fcfffd] px-3 focus-within:ring-4 focus-within:ring-[var(--ring)]">
                     <span className="text-sm font-semibold text-gray-500">$</span>
                     <InputForm name='amount' control={control} type='number' placeholder='0.00'
-                        className="w-full border-0 bg-transparent py-2.5 pl-2 pr-0 text-gray-900 tabular-nums focus:outline-none" />
+                        className="amount-input w-full border-0 bg-transparent py-2.5 pl-2 pr-0 text-gray-900 tabular-nums focus:outline-none" />
                 </div>
                 {errors.amount && (
                     <p className="mt-1 text-sm text-red-600">{errors.amount.message}</p>
@@ -136,7 +153,7 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
                 <label htmlFor="category" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Category</label>
                 <SelectForm name='categoryId' control={control} error={errors.categoryId}
                     className="select-modern"
-                    placeholder="Select a category"
+                    placeholder={selectedTransactionType > 0 ? "Select a category" : "Select a transaction type first"}
                     options={categories?.map(category => ({
                         id: category.id,
                         label: category.name

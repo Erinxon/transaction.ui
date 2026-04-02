@@ -1,9 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DashboardFilter } from "../../../core/dashboard/types/dashboard.types";
 import { getAllCategories } from "../../../core/Category/services/categoryApi";
-import { deleteTransaction, getAllTransactions } from "../../../core/transactions/services/transactionApi";
-import type { TransactionRequest, TransactionResponse } from "../../../core/transactions/types/transaction.types";
+import { TransactionType } from "../../../core/Category/types/category.types";
+import {
+    deleteTransaction,
+    downloadTransactionsTemplate,
+    exportTransactions,
+    getAllTransactions,
+    importTransactions,
+} from "../../../core/transactions/services/transactionApi";
+import type { ImportResponse, TransactionRequest, TransactionResponse } from "../../../core/transactions/types/transaction.types";
 import { AdvancedFilterModal } from "../../../components/AdvancedFilterModal";
 import { Alert, ConfirmDialog, Modal, NotSort } from "../../../components";
 import { useModalContext } from "../../../components/Modal/context";
@@ -12,9 +19,28 @@ import Pagination from "../../../components/Pagination";
 import { SkeletonRow } from "../../../components/SkeletonRow";
 import { AddTransaction } from "./components/AddTransaction";
 
+const triggerDownload = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+const getImportSuccessMessage = ({ insertedCount, categoriesCreated }: ImportResponse) => {
+    const transactionLabel = insertedCount === 1 ? "transaccion importada" : "transacciones importadas";
+    const categoryLabel = categoriesCreated === 1 ? "categoria creada" : "categorias creadas";
+
+    return `Importacion completada: ${insertedCount} ${transactionLabel} y ${categoriesCreated} ${categoryLabel}.`;
+};
+
 export const Transactions = () => {
     const queryClient = useQueryClient();
     const { setIsOpen } = useModalContext();
+    const importInputRef = useRef<HTMLInputElement | null>(null);
 
     const [currentModal, setCurrentModal] = useState<"add" | "filter" | "delete">("add");
     const [page, setPage] = useState(1);
@@ -22,6 +48,8 @@ export const Transactions = () => {
     const [transactionResponse, setTransactionResponse] = useState<TransactionResponse | null>(null);
     const [sortField, setSortField] = useState("Date");
     const [sortDirection, setSortDirection] = useState<"ascending" | "descending">("descending");
+    const [feedbackMessage, setFeedbackMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [filters, setFilters] = useState<DashboardFilter>({
         minAmount: null,
@@ -43,10 +71,69 @@ export const Transactions = () => {
         mutationFn: deleteTransaction,
     });
 
-    const { data: categories } = useQuery({
-        queryKey: ["allCategories"],
-        queryFn: () => getAllCategories(),
+    const { mutate: mutateImport, isPending: isImporting } = useMutation({
+        mutationFn: importTransactions,
+        onSuccess: (response) => {
+            setErrorMessage("");
+            setFeedbackMessage(getImportSuccessMessage(response));
+            reload();
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : "No se pudo importar el archivo Excel.";
+            setFeedbackMessage("");
+            setErrorMessage(message);
+        },
     });
+
+    const { mutate: mutateExport, isPending: isExporting } = useMutation({
+        mutationFn: exportTransactions,
+        onSuccess: (blob) => {
+            triggerDownload(blob, "transacciones_export.xlsx");
+            setErrorMessage("");
+            setFeedbackMessage("Exportacion completada. Se descargo el archivo Excel de transacciones.");
+        },
+        onError: () => {
+            setFeedbackMessage("");
+            setErrorMessage("No se pudo exportar el archivo Excel de transacciones.");
+        },
+    });
+
+    const { mutate: mutateTemplateDownload, isPending: isDownloadingTemplate } = useMutation({
+        mutationFn: downloadTransactionsTemplate,
+        onSuccess: (blob) => {
+            triggerDownload(blob, "plantilla_transacciones.xlsx");
+            setErrorMessage("");
+            setFeedbackMessage("Plantilla descargada. Puedes completarla y luego importarla en esta pantalla.");
+        },
+        onError: () => {
+            setFeedbackMessage("");
+            setErrorMessage("No se pudo descargar la plantilla de transacciones.");
+        },
+    });
+
+    const selectedTransactionType = filters.transactionTypeId ? Number(filters.transactionTypeId) : null;
+
+    const { data: categories } = useQuery({
+        queryKey: ["allCategories", selectedTransactionType],
+        queryFn: () => getAllCategories(
+            selectedTransactionType ? selectedTransactionType as TransactionType : undefined,
+        ),
+    });
+
+    useEffect(() => {
+        if (!filters.categoryId) {
+            return;
+        }
+
+        const categoryId = Number(filters.categoryId);
+        const isValidCategory = categories?.some((category) => category.id === categoryId) ?? false;
+        if (!isValidCategory) {
+            setFilters((prev) => ({
+                ...prev,
+                categoryId: null,
+            }));
+        }
+    }, [categories, filters.categoryId]);
 
     const reload = () => {
         queryClient.invalidateQueries({
@@ -112,6 +199,36 @@ export const Transactions = () => {
         }));
     };
 
+    const handleExport = () => {
+        mutateExport();
+    };
+
+    const handleTemplateDownload = () => {
+        mutateTemplateDownload();
+    };
+
+    const handleImportClick = () => {
+        importInputRef.current?.click();
+    };
+
+    const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".xlsx")) {
+            setFeedbackMessage("");
+            setErrorMessage("El archivo debe ser un Excel (.xlsx).");
+            event.target.value = "";
+            return;
+        }
+
+        mutateImport(file);
+        event.target.value = "";
+    };
+
     return (
         <>
             <section className="app-page fade-in-up">
@@ -124,14 +241,21 @@ export const Transactions = () => {
                         <button onClick={handleAdd} className="btn-modern btn-primary">
                             <i className="fas fa-plus mr-2"></i> Nuevo movimiento
                         </button>
-                        <button className="btn-modern btn-secondary">
-                            <i className="fas fa-file-export mr-2"></i> Exportar
+                        <button className="btn-modern btn-secondary" onClick={handleTemplateDownload} disabled={isDownloadingTemplate}>
+                            <i className="fas fa-file-arrow-down mr-2"></i> {isDownloadingTemplate ? "Descargando..." : "Plantilla Excel"}
                         </button>
-                        <button className="btn-modern btn-secondary">
-                            <i className="fas fa-file-import mr-2"></i> Importar
+                        <button className="btn-modern btn-secondary" onClick={handleExport} disabled={isExporting}>
+                            <i className="fas fa-file-export mr-2"></i> {isExporting ? "Exportando..." : "Exportar Excel"}
                         </button>
+                        <button className="btn-modern btn-secondary" onClick={handleImportClick} disabled={isImporting}>
+                            <i className="fas fa-file-import mr-2"></i> {isImporting ? "Importando..." : "Importar Excel"}
+                        </button>
+                        <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportFile} disabled={isImporting} />
                     </div>
                 </div>
+
+                {feedbackMessage && <Alert type="success" message={feedbackMessage} className="mb-4" onClose={() => setFeedbackMessage("")} />}
+                {errorMessage && <Alert type="error" message={errorMessage} className="mb-4" onClose={() => setErrorMessage("")} />}
 
                 <div className="soft-card mb-4 rounded-2xl p-4">
                     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -144,7 +268,7 @@ export const Transactions = () => {
                                     id="transaction-type"
                                     className="select-modern"
                                     value={filters.transactionTypeId || ""}
-                                    onChange={(e) => handleInputChange("transactionTypeId", e.target.value)}
+                                    onChange={(e) => handleInputChange("transactionTypeId", e.target.value ? Number(e.target.value) : null)}
                                 >
                                     <option value="">Todo</option>
                                     <option value={1}>Ingreso</option>
@@ -160,7 +284,7 @@ export const Transactions = () => {
                                     id="category"
                                     className="select-modern"
                                     value={filters.categoryId || ""}
-                                    onChange={(e) => handleInputChange("categoryId", e.target.value)}
+                                    onChange={(e) => handleInputChange("categoryId", e.target.value ? Number(e.target.value) : null)}
                                 >
                                     <option key={0} value="">
                                         Todo

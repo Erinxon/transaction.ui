@@ -1,6 +1,6 @@
 import type { UserTransactionFormValues } from '../../../models/shemas/user-transaction.schema';
 import api from '../../api/axios';
-import type { CreateTransactionResponse, ImportRequest, ImportResponse, PaginatedResponse, TransactionRequest, TransactionResponse, UpdateTransactionRequest } from '../types/transaction.types';
+import type { CreateTransactionResponse, ImportResponse, PaginatedResponse, TransactionRequest, TransactionResponse, UpdateTransactionRequest } from '../types/transaction.types';
 
 export const getAllTransactions = async (request: TransactionRequest): Promise<PaginatedResponse<TransactionResponse>> => {
   const response = await api.get('/UserTransaction', {
@@ -24,7 +24,31 @@ export const deleteTransaction = async (id: number): Promise<CreateTransactionRe
   return response.data;
 };
 
-export const importTransactions = async (request: ImportRequest): Promise<ImportResponse> => {
-  const response = await api.post('/UserTransaction/import', request);
+export const importTransactions = async (file: File): Promise<ImportResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post('/UserTransaction/import', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+};
+
+export const exportTransactions = async (): Promise<Blob> => {
+  const response = await api.get('/UserTransaction/export', {
+    responseType: 'blob',
+  });
+
+  return response.data;
+};
+
+export const downloadTransactionsTemplate = async (): Promise<Blob> => {
+  const response = await api.get('/UserTransaction/export-template', {
+    responseType: 'blob',
+  });
+
   return response.data;
 };

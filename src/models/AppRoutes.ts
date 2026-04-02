@@ -15,6 +15,7 @@ export const AppRoutes = {
       logs: 'logs',
       audit: 'audit',
       users: 'users',
+      categories: 'categories',
     },
   }
 }

@@ -128,6 +128,15 @@ export const Layout = ({ children }: Props) => {
                                 activeClassName="is-active"
                                 onClick={closeSidebar}
                             />
+
+                            <MenuLink
+                                name="Categorias"
+                                icon="fas fa-tags"
+                                to={`${AppRoutes.private.root}/${AppRoutes.private.admin.root}/${AppRoutes.private.admin.categories}`}
+                                className="app-nav-link"
+                                activeClassName="is-active"
+                                onClick={closeSidebar}
+                            />
                         </>
                     )}
 

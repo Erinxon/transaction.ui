@@ -116,3 +116,36 @@ export interface UserStatisticsResponse {
     Timestamp: string;
   }>;
 }
+
+export interface AdminCategory {
+  id: number;
+  name: string;
+  description: string;
+  transactionTypeId: number;
+}
+
+export interface AdminCategoriesRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  transactionType?: number;
+}
+
+export interface AdminCategoriesResponse {
+  data: AdminCategory[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface UpsertAdminCategoryRequest {
+  name: string;
+  description: string;
+  transactionTypeId: number;
+}
+
+export interface ImportCategoriesResponse {
+  importedCount: number;
+  errors: string[];
+}

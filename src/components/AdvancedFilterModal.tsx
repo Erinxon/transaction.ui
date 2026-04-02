@@ -5,6 +5,7 @@ import { useModalContext } from "./Modal/context"
 import { Modal } from "./Modal/Modal"
 import { useQuery } from "@tanstack/react-query"
 import { getAllCategories } from "../core/Category/services/categoryApi"
+import { TransactionType } from "../core/Category/types/category.types"
 
 interface AdvancedFilterModalProps {
   filters: DashboardFilter
@@ -27,10 +28,13 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
   const [isSelectOpen, setIsSelectOpen] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
   const { isOpen, setIsOpen } = useModalContext();
+  const selectedTransactionType = localFilters.transactionTypeId ? Number(localFilters.transactionTypeId) : null;
 
   const { data: categories } = useQuery({
-    queryKey: ["allCategories"],
-    queryFn: () => getAllCategories(),
+    queryKey: ["allCategories", selectedTransactionType],
+    queryFn: () => getAllCategories(
+      selectedTransactionType ? selectedTransactionType as TransactionType : undefined,
+    ),
   })
 
   const handleInputChange = (name: keyof DashboardFilter, value: string | number | null) => {
@@ -77,6 +81,21 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
       setIsSelectOpen(false);
     }
   }, [isOpen])
+
+  useEffect(() => {
+    if (!localFilters.categoryId) {
+      return;
+    }
+
+    const categoryId = Number(localFilters.categoryId);
+    const isValidCategory = categories?.some((category) => category.id === categoryId) ?? false;
+    if (!isValidCategory) {
+      setLocalFilters((prev) => ({
+        ...prev,
+        categoryId: null,
+      }));
+    }
+  }, [categories, localFilters.categoryId])
 
   return (
     <>
@@ -243,7 +262,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange }: AdvancedFilter
               <div className="space-y-2">
                 <select id="categoryId" className="select-modern"
                   value={localFilters.categoryId || ""}
-                  onChange={(e) => handleInputChange("categoryId", e.target.value)}>
+                  onChange={(e) => handleInputChange("categoryId", e.target.value ? Number(e.target.value) : null)}>
                     <option key={0} value="">Todo</option>
                   {categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                 </select>
