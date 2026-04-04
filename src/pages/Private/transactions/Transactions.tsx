@@ -355,6 +355,15 @@ export const Transactions = () => {
         return calendarTransactions[selectedCalendarDayKey] ?? [];
     }, [calendarTransactions, selectedCalendarDayKey]);
 
+    const mobileCalendarDays = useMemo(() => {
+        return Object.entries(calendarTransactions)
+            .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+            .map(([dayKey, items]) => ({
+                dayKey,
+                items,
+            }));
+    }, [calendarTransactions]);
+
     const transactionActionButtons = (item: TransactionResponse) => (
         <div className="flex items-center justify-end gap-2 text-sm font-medium">
             <button className="cursor-pointer rounded-md px-2 py-1 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900" onClick={() => handleEdit(item)}>
@@ -381,17 +390,17 @@ export const Transactions = () => {
                         <h1 className="page-title">Transactions</h1>
                         <p className="page-subtitle">Registra, filtra y ordena tus movimientos de forma rapida.</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <button onClick={handleAdd} className="btn-modern btn-primary">
+                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-2 xl:flex xl:flex-wrap xl:justify-end">
+                        <button onClick={handleAdd} className="btn-modern btn-primary w-full justify-center lg:w-auto">
                             <i className="fas fa-plus mr-2"></i> Nuevo movimiento
                         </button>
-                        <button className="btn-modern btn-secondary" onClick={handleTemplateDownload} disabled={isDownloadingTemplate}>
+                        <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleTemplateDownload} disabled={isDownloadingTemplate}>
                             <i className="fas fa-file-arrow-down mr-2"></i> {isDownloadingTemplate ? "Descargando..." : "Plantilla Excel"}
                         </button>
-                        <button className="btn-modern btn-secondary" onClick={handleExport} disabled={isExporting}>
+                        <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleExport} disabled={isExporting}>
                             <i className="fas fa-file-export mr-2"></i> {isExporting ? "Exportando..." : "Exportar Excel"}
                         </button>
-                        <button className="btn-modern btn-secondary" onClick={handleImportClick} disabled={isImporting}>
+                        <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleImportClick} disabled={isImporting}>
                             <i className="fas fa-file-import mr-2"></i> {isImporting ? "Importando..." : "Importar Excel"}
                         </button>
                         <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportFile} disabled={isImporting} />
@@ -403,7 +412,7 @@ export const Transactions = () => {
 
                 <div className="soft-card mb-4 rounded-2xl p-4">
                     <div className="flex flex-wrap items-end justify-between gap-4">
-                        <div className="grid w-full grid-cols-1 gap-3 md:w-auto md:grid-cols-2">
+                        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:w-auto md:grid-cols-2">
                             <div>
                                 <label htmlFor="transaction-type" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
                                     Tipo
@@ -442,7 +451,7 @@ export const Transactions = () => {
                             </div>
                         </div>
 
-                        <button id="advanced-filter-toggle" className="btn-modern btn-ghost" onClick={() => handleShowModal("filter")}>
+                        <button id="advanced-filter-toggle" className="btn-modern btn-ghost w-full justify-center sm:w-auto" onClick={() => handleShowModal("filter")}>
                             <i className="fas fa-sliders mr-2"></i> Filtros avanzados
                         </button>
                     </div>
@@ -450,7 +459,7 @@ export const Transactions = () => {
 
                 <div className="soft-card mb-4 rounded-2xl p-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-2">
                             <button
                                 className={`btn-modern ${viewMode === "list" ? "btn-primary" : "btn-secondary"}`}
                                 onClick={() => setViewMode("list")}
@@ -475,11 +484,11 @@ export const Transactions = () => {
                         </div>
 
                         {viewMode === "calendar" && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
                                 <button type="button" className="btn-modern btn-secondary" onClick={() => handleCalendarShift(-1)}>
                                     <i className="fas fa-chevron-left"></i>
                                 </button>
-                                <span className="min-w-40 text-center text-sm font-semibold capitalize text-gray-700">{calendarMonthLabel}</span>
+                                <span className="min-w-0 flex-1 text-center text-sm font-semibold capitalize text-gray-700 sm:min-w-40 sm:flex-none">{calendarMonthLabel}</span>
                                 <button type="button" className="btn-modern btn-secondary" onClick={() => handleCalendarShift(1)}>
                                     <i className="fas fa-chevron-right"></i>
                                 </button>
@@ -490,63 +499,99 @@ export const Transactions = () => {
 
                 <div id="list-view" className="soft-card overflow-hidden rounded-2xl">
                     {viewMode === "list" && (
-                        <div className="overflow-x-auto">
-                            <table className="table-modern min-w-[700px]">
-                                <thead>
-                                    <tr>
-                                        <th onClick={() => handleSort("Date")} className="cursor-pointer text-left">
-                                            Date {sortField === "Date" && (sortDirection === "ascending" ? "▲" : "▼")}
-                                            {sortField !== "Date" && <NotSort />}
-                                        </th>
-                                        <th onClick={() => handleSort("Category")} className="cursor-pointer text-left">
-                                            Category {sortField === "Category" && (sortDirection === "ascending" ? "▲" : "▼")}
-                                            {sortField !== "Category" && <NotSort />}
-                                        </th>
-                                        <th className="text-left">Comment</th>
-                                        <th onClick={() => handleSort("Amount")} className="cursor-pointer text-right">
-                                            Amount {sortField === "Amount" && (sortDirection === "ascending" ? "▲" : "▼")}
-                                            {sortField !== "Amount" && <NotSort />}
-                                        </th>
-                                        <th className="text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isLoading ? (
-                                        <SkeletonRow quantity={5} />
-                                    ) : error ? (
-                                        <tr>
-                                            <td className="text-center text-red-500" colSpan={5}>
-                                                <Alert type="error" message="Error cargando transacciones" />
-                                            </td>
-                                        </tr>
-                                    ) : transactions.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5}>{renderEmptyState("No hay transacciones para mostrar en lista.")}</td>
-                                        </tr>
-                                    ) : (
-                                        transactions.map((item) => (
-                                            <tr key={item.id}>
-                                                <td className="whitespace-nowrap text-sm text-gray-600">{new Date(item.date).toLocaleDateString()}</td>
-                                                <td className="whitespace-nowrap text-sm">
-                                                    <span className={`status-chip ${item.transactionTypeId === 1 ? "status-income" : "status-expense"}`}>
-                                                        {item.category}
-                                                    </span>
-                                                </td>
-                                                <td className="max-w-48 truncate whitespace-nowrap text-sm text-gray-600">{item.description}</td>
-                                                <td
-                                                    className={`whitespace-nowrap text-right text-sm font-semibold ${
+                        <>
+                            <div className="space-y-3 p-3 md:hidden">
+                                {isLoading ? (
+                                    Array.from({ length: 4 }, (_, index) => (
+                                        <div key={index} className="h-28 animate-pulse rounded-xl border border-gray-200 bg-gray-100"></div>
+                                    ))
+                                ) : error ? (
+                                    <Alert type="error" message="Error cargando transacciones" />
+                                ) : transactions.length === 0 ? (
+                                    renderEmptyState("No hay transacciones para mostrar en lista.")
+                                ) : (
+                                    transactions.map((item) => (
+                                        <article key={item.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                                            <div className="mb-2 flex items-center justify-between gap-2">
+                                                <span className={`status-chip ${item.transactionTypeId === 1 ? "status-income" : "status-expense"}`}>
+                                                    {item.category}
+                                                </span>
+                                                <span className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
+                                            </div>
+                                            <p className="mb-2 text-sm text-gray-600">{item.description || "Sin descripcion"}</p>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span
+                                                    className={`text-sm font-bold ${
                                                         item.transactionTypeId === 1 ? "text-emerald-700" : "text-rose-700"
                                                     }`}
                                                 >
                                                     <FormattedNumber value={item.amount} isAmount={true} />
+                                                </span>
+                                                {transactionActionButtons(item)}
+                                            </div>
+                                        </article>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="hidden overflow-x-auto md:block">
+                                <table className="table-modern min-w-[700px]">
+                                    <thead>
+                                        <tr>
+                                            <th onClick={() => handleSort("Date")} className="cursor-pointer text-left">
+                                                Date {sortField === "Date" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {sortField !== "Date" && <NotSort />}
+                                            </th>
+                                            <th onClick={() => handleSort("Category")} className="cursor-pointer text-left">
+                                                Category {sortField === "Category" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {sortField !== "Category" && <NotSort />}
+                                            </th>
+                                            <th className="text-left">Comment</th>
+                                            <th onClick={() => handleSort("Amount")} className="cursor-pointer text-right">
+                                                Amount {sortField === "Amount" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {sortField !== "Amount" && <NotSort />}
+                                            </th>
+                                            <th className="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {isLoading ? (
+                                            <SkeletonRow quantity={5} />
+                                        ) : error ? (
+                                            <tr>
+                                                <td className="text-center text-red-500" colSpan={5}>
+                                                    <Alert type="error" message="Error cargando transacciones" />
                                                 </td>
-                                                <td className="whitespace-nowrap text-right text-sm font-medium">{transactionActionButtons(item)}</td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                        ) : transactions.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5}>{renderEmptyState("No hay transacciones para mostrar en lista.")}</td>
+                                            </tr>
+                                        ) : (
+                                            transactions.map((item) => (
+                                                <tr key={item.id}>
+                                                    <td className="whitespace-nowrap text-sm text-gray-600">{new Date(item.date).toLocaleDateString()}</td>
+                                                    <td className="whitespace-nowrap text-sm">
+                                                        <span className={`status-chip ${item.transactionTypeId === 1 ? "status-income" : "status-expense"}`}>
+                                                            {item.category}
+                                                        </span>
+                                                    </td>
+                                                    <td className="max-w-48 truncate whitespace-nowrap text-sm text-gray-600">{item.description}</td>
+                                                    <td
+                                                        className={`whitespace-nowrap text-right text-sm font-semibold ${
+                                                            item.transactionTypeId === 1 ? "text-emerald-700" : "text-rose-700"
+                                                        }`}
+                                                    >
+                                                        <FormattedNumber value={item.amount} isAmount={true} />
+                                                    </td>
+                                                    <td className="whitespace-nowrap text-right text-sm font-medium">{transactionActionButtons(item)}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     )}
 
                     {viewMode === "grid" && (
@@ -562,7 +607,7 @@ export const Transactions = () => {
                             ) : transactions.length === 0 ? (
                                 renderEmptyState("No hay transacciones para mostrar en grid.")
                             ) : (
-                                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                                     {transactions.map((item) => (
                                         <article
                                             key={item.id}
@@ -614,7 +659,50 @@ export const Transactions = () => {
                                 <Alert type="error" message="Error cargando transacciones" />
                             ) : (
                                 <div className="space-y-3">
-                                    <div className="overflow-x-auto">
+                                    <div className="space-y-2 sm:hidden">
+                                        {mobileCalendarDays.length === 0 ? (
+                                            <div className="rounded-lg border border-dashed border-gray-200 p-4 text-sm text-gray-500">
+                                                No hay movimientos para este mes.
+                                            </div>
+                                        ) : (
+                                            mobileCalendarDays.map(({ dayKey, items }) => (
+                                                <button
+                                                    key={dayKey}
+                                                    type="button"
+                                                    onClick={() => handleOpenCalendarDayModal(dayKey)}
+                                                    className="w-full rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm"
+                                                >
+                                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                                        <span className="text-sm font-semibold text-gray-700">
+                                                            {new Date(dayKey).toLocaleDateString("es-ES", {
+                                                                weekday: "short",
+                                                                day: "2-digit",
+                                                                month: "short",
+                                                            })}
+                                                        </span>
+                                                        <span className="text-xs font-medium text-gray-500">{items.length} mov.</span>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        {items.slice(0, 3).map((item) => (
+                                                            <div key={item.id} className="flex items-center justify-between gap-2 text-xs">
+                                                                <span className="truncate text-gray-600">{item.category}</span>
+                                                                <span
+                                                                    className={`font-semibold ${
+                                                                        item.transactionTypeId === 1 ? "text-emerald-700" : "text-rose-700"
+                                                                    }`}
+                                                                >
+                                                                    <FormattedNumber value={item.amount} isAmount={true} />
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                        {items.length > 3 && <span className="text-[11px] font-semibold text-gray-500">+{items.length - 3} mas</span>}
+                                                    </div>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    <div className="hidden overflow-x-auto sm:block">
                                         <div className="min-w-[760px]">
                                             <div className="grid grid-cols-7 border-b border-gray-200">
                                                 {weekDays.map((day) => (

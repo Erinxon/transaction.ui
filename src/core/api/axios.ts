@@ -5,8 +5,38 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-// Para evitar múltiples refresh simultáneos
-let isRefreshing = false;
+type RefreshResponse = {
+  accessToken?: string;
+  refreshToken?: string;
+};
+
+// Promise compartida para evitar múltiples refresh simultáneos.
+let refreshPromise: Promise<string | null> | null = null;
+
+const setAuthorizationHeader = (req: InternalAxiosRequestConfig, token: string) => {
+  req.headers.Authorization = `${token}`;
+};
+
+const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
+  const { data } = await axios.post<RefreshResponse>(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
+    refreshToken,
+  });
+
+  const newAccessToken = typeof data.accessToken === 'string' ? data.accessToken : null;
+  const newRefreshToken = typeof data.refreshToken === 'string' ? data.refreshToken : null;
+
+  if (newAccessToken) {
+    localStorage.setItem('accessToken', newAccessToken);
+  } else {
+    localStorage.removeItem('accessToken');
+  }
+
+  if (newRefreshToken) {
+    localStorage.setItem('refreshToken', newRefreshToken);
+  }
+
+  return newAccessToken;
+};
 
 
 // Interceptor de request
@@ -14,37 +44,31 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
   let accessToken = localStorage.getItem('accessToken');
   const refreshToken = localStorage.getItem('refreshToken');
 
-  if (accessToken) {
-    const isExpired = isTokenValid(accessToken) === false;
+  if (!accessToken) {
+    return req;
+  }
 
-    // Si expiró, intentamos refresh antes de enviar la request
-    if (isExpired && refreshToken && !isRefreshing) {
-      isRefreshing = true;
+  const isExpired = isTokenValid(accessToken) === false;
 
-      try {
-        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
-          refreshToken,
+  // Si expiró, esperamos un refresh único y reutilizamos su resultado.
+  if (isExpired && refreshToken) {
+    try {
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken(refreshToken).finally(() => {
+          refreshPromise = null;
         });
-
-        accessToken = data.accessToken;
-        if (typeof accessToken === 'string') {
-          localStorage.setItem('accessToken', accessToken);
-        }
-        if (typeof data.refreshToken === 'string') {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
-
-        req.headers.Authorization = `${accessToken}`;
-      } catch (err) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        throw err; // o redirige al login
-      } finally {
-        isRefreshing = false;
       }
-    } else if (!isExpired) {
-      req.headers.Authorization = `${accessToken}`;
+
+      accessToken = await refreshPromise;
+    } catch (err) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      throw err; // o redirige al login
     }
+  }
+
+  if (accessToken) {
+    setAuthorizationHeader(req, accessToken);
   }
 
   return req;

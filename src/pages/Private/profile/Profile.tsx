@@ -17,6 +17,10 @@ export const Profile = () => {
         queryKey: ["getProfile"],
         queryFn: () => getProfile(),
     });
+    const displayFirstName = data?.firstName ?? '';
+    const displayLastName = data?.lastName ?? '';
+    const displayName = `${displayFirstName} ${displayLastName}`.trim();
+    const displayEmail = data?.email ?? '';
 
     const { control, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm({
         resolver: zodResolver(UpdateProfileSchema),
@@ -129,8 +133,8 @@ export const Profile = () => {
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-xl font-semibold text-gray-800">{`${data?.firstName} ${data?.lastName}`}</h2>
-                                <p className="text-gray-600">{data?.email}</p>
+                                <h2 className="text-xl font-semibold text-gray-800">{displayName || 'Perfil'}</h2>
+                                <p className="text-gray-600">{displayEmail}</p>
                             </div>
                         </div>
                     </div>
