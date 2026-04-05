@@ -11,7 +11,9 @@ import type {
   ImportCategoriesResponse,
   AdminUsersRequest,
   DateRangeFilter,
+  ManualScheduleResponse,
   SystemLog,
+  ReportDiagnosticsResponse,
   UpsertAdminCategoryRequest,
   UserAudit,
   UserStatisticsResponse,
@@ -89,6 +91,16 @@ export const getUserStatistics = async (userId: string): Promise<UserStatisticsR
 
 export const getAdminDashboard = async (request: DateRangeFilter): Promise<AdminDashboardResponse> => {
   const response = await api.get('/api/admin/dashboard', { params: request });
+  return response.data;
+};
+
+export const getReportDiagnostics = async (): Promise<ReportDiagnosticsResponse> => {
+  const response = await api.get('/Reports/diagnostics');
+  return response.data;
+};
+
+export const triggerManualReportScheduling = async (): Promise<ManualScheduleResponse> => {
+  const response = await api.post('/Reports/manual-schedule');
   return response.data;
 };
 

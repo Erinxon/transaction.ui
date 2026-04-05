@@ -76,6 +76,31 @@ export interface AdminDashboardResponse {
   recentErrors: DashboardRecentError[];
 }
 
+export interface ScheduledReportJob {
+  id: string;
+  function: string;
+  expression: string;
+  isEnabled: boolean;
+  description: string;
+  exists: boolean;
+}
+
+export interface ReportDiagnosticsResponse {
+  totalJobs: number;
+  existingJobs: number;
+  jobs: ScheduledReportJob[];
+  message: string;
+  timeZone: string;
+  weeklyDay: string;
+  monthlyDay: number;
+}
+
+export interface ManualScheduleResponse {
+  message: string;
+  success: boolean;
+  details: string;
+}
+
 export interface DateRangeFilter {
   from?: string;
   to?: string;
