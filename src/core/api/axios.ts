@@ -1,5 +1,10 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { isTokenValid } from '../../utils';
+
+// Extiende la config para marcar reintentos y evitar bucles infinitos.
+interface RetryableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -74,5 +79,42 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
   return req;
 });
 
+// Interceptor de response: maneja 401 que devuelve el servidor.
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (!refreshToken) {
+        localStorage.removeItem('accessToken');
+        return Promise.reject(error);
+      }
+
+      try {
+        if (!refreshPromise) {
+          refreshPromise = refreshAccessToken(refreshToken).finally(() => {
+            refreshPromise = null;
+          });
+        }
+
+        const newAccessToken = await refreshPromise;
+
+        if (newAccessToken) {
+          setAuthorizationHeader(originalRequest, newAccessToken);
+          return api(originalRequest);
+        }
+      } catch {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;
