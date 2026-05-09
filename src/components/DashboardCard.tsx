@@ -10,22 +10,22 @@ interface Props {
 export const DashboardCard = ({ title, value, color, children }: Props) => {
     const toneMap = {
         green: {
-            title: "text-emerald-700",
-            value: "text-emerald-900",
-            iconBg: "bg-emerald-100",
-            iconColor: "text-emerald-700",
+            title: "text-emerald-700 dark:text-emerald-400",
+            value: "text-emerald-900 dark:text-emerald-300",
+            iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
+            iconColor: "text-emerald-700 dark:text-emerald-400",
         },
         red: {
-            title: "text-rose-700",
-            value: "text-rose-900",
-            iconBg: "bg-rose-100",
-            iconColor: "text-rose-700",
+            title: "text-rose-700 dark:text-rose-400",
+            value: "text-rose-900 dark:text-rose-300",
+            iconBg: "bg-rose-100 dark:bg-rose-900/40",
+            iconColor: "text-rose-700 dark:text-rose-400",
         },
         neutral: {
-            title: "text-slate-700",
-            value: "text-slate-900",
-            iconBg: "bg-slate-100",
-            iconColor: "text-slate-700",
+            title: "text-slate-700 dark:text-slate-400",
+            value: "text-slate-900 dark:text-slate-300",
+            iconBg: "bg-slate-100 dark:bg-slate-700/60",
+            iconColor: "text-slate-700 dark:text-slate-400",
         },
     } as const;
 

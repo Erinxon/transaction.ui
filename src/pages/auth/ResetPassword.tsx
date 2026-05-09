@@ -11,6 +11,7 @@ import {
   ResetPasswordSchema,
   type ResetPasswordFormValues,
 } from '../../models/shemas/reset-password.schema';
+import { useI18n } from '../../core/i18n/useI18n';
 
 type ErrorResponse = {
   errors?: Record<string, string[]>;
@@ -21,11 +22,12 @@ const extractValidationErrors = (error: AxiosError): string[] => {
   if (responseData?.errors && typeof responseData.errors === 'object') {
     return Object.values(responseData.errors).flat();
   }
-  return ['Ha ocurrido un error inesperado al procesar la solicitud'];
+  return [];
 };
 
 export const ResetPassword = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const [errorMsg, setErrorMsg] = useState<string[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
@@ -48,14 +50,14 @@ export const ResetPassword = () => {
     mutationFn: resetPassword,
     onSuccess: (response) => {
       setErrorMsg([]);
-      setSuccessMsg(response.message ?? 'Tu contrasena fue restablecida correctamente.');
+      setSuccessMsg(response.message ?? t('rp_success_default'));
       setTimeout(() => navigate('/login', { replace: true }), 1200);
     },
   });
 
   const onSubmit: SubmitHandler<ResetPasswordFormValues> = (formData) => {
     if (!tokenFromUrl) {
-      setErrorMsg(['El enlace de restablecimiento es invalido o ha expirado']);
+      setErrorMsg([t('rp_error_invalid_link')]);
       setSuccessMsg('');
       return;
     }
@@ -71,9 +73,10 @@ export const ResetPassword = () => {
         onError: (error) => {
           const axiosError = error as AxiosError;
           if (axiosError.response?.status === 400) {
-            setErrorMsg(extractValidationErrors(axiosError));
+            const errs = extractValidationErrors(axiosError);
+            setErrorMsg(errs.length > 0 ? errs : [t('rp_error_request')]);
           } else {
-            setErrorMsg(['Ha ocurrido un error inesperado al restablecer la contrasena']);
+            setErrorMsg([t('rp_error_reset')]);
           }
           setSuccessMsg('');
         },
@@ -85,8 +88,8 @@ export const ResetPassword = () => {
     <div className="auth-shell fade-in-up">
       <div className="auth-card">
         <div className="mb-8 text-center">
-          <h1 className="page-title">Restablecer contrasena</h1>
-          <p className="page-subtitle">Completa los datos para establecer una nueva contrasena.</p>
+          <h1 className="page-title">{t('rp_title')}</h1>
+          <p className="page-subtitle">{t('rp_subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -105,7 +108,7 @@ export const ResetPassword = () => {
             <InputForm
               name="newPassword"
               control={control}
-              label="Nueva contrasena"
+              label={t('rp_new_password')}
               type="password"
               error={errors.newPassword}
               placeholder="••••••••"
@@ -116,7 +119,7 @@ export const ResetPassword = () => {
             <InputForm
               name="confirmPassword"
               control={control}
-              label="Confirmar contrasena"
+              label={t('rp_confirm_password')}
               type="password"
               error={errors.confirmPassword}
               placeholder="••••••••"
@@ -149,15 +152,14 @@ export const ResetPassword = () => {
           )}
 
           <button type="submit" className="btn-modern btn-primary w-full py-3">
-            {isPending ? 'Guardando...' : 'Restablecer contrasena'}
+            {isPending ? t('rp_submitting') : t('rp_submit')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Volver a{' '}
             <Link to="/login" className="font-medium text-emerald-700 hover:text-emerald-600">
-              Iniciar sesion
+              {t('fp_back_to_login')}
             </Link>
           </p>
         </div>

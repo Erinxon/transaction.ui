@@ -38,7 +38,7 @@ export const ConfirmDialog = ({
             <div className="flex justify-end space-x-3">
                 <button
                     onClick={handleCancel}
-                    className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md cursor-pointer"
+                    className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md cursor-pointer"
                 >
                     {cancelText}
                 </button>

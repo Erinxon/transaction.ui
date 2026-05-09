@@ -8,10 +8,12 @@ import type { AxiosError } from "axios";
 import { useState, useEffect, useCallback } from "react";
 import FormSkeleton from "../../../components/FormSkeleton";
 import type { ProfileResponse } from "../../../core/profile/types/profile.types";
+import { useI18n } from "../../../core/i18n/useI18n";
 
 export const Profile = () => {
     const queryClient = useQueryClient();
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
+    const { t } = useI18n();
 
     const { isLoading, error, data } = useQuery({
         queryKey: ["getProfile"],
@@ -116,8 +118,8 @@ export const Profile = () => {
             <section className="app-page fade-in-up">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
-                        <h1 className="page-title">Profile</h1>
-                        <p className="page-subtitle">Gestiona tus datos, seguridad y preferencias de notificacion.</p>
+                        <h1 className="page-title">{t('profile_title')}</h1>
+                        <p className="page-subtitle">{t('profile_subtitle')}</p>
                     </div>
                 </div>
                 <div className="soft-card overflow-hidden rounded-2xl">
@@ -133,20 +135,20 @@ export const Profile = () => {
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-xl font-semibold text-gray-800">{displayName || 'Perfil'}</h2>
+                                <h2 className="text-xl font-semibold text-gray-800">{displayName || t('profile_title')}</h2>
                                 <p className="text-gray-600">{displayEmail}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-6">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-800">Personal Information</h3>
+<h3 className="mb-4 text-lg font-semibold text-gray-800">{t('profile_personal_info')}</h3>
 
                         {isLoading ? (<FormSkeleton />)
                             : error ? (
                                 <tr>
                                     <td className="text-red-500 text-center" colSpan={5}>
-                                        <Alert type="error" message="Error cargando el perfil del usuario" />
+                                        <Alert type="error" message={t('profile_error_loading')} />
                                     </td>
                                 </tr>
                             ) :
@@ -154,34 +156,34 @@ export const Profile = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
                                             <label htmlFor="first-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                First Name
+                                                {t('profile_first_name')}
                                             </label>
                                             <InputForm name='firstName' control={control} type='text' error={errors.firstName as FieldError} />
                                         </div>
                                         <div>
                                             <label htmlFor="last-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Last Name
+                                                {t('profile_last_name')}
                                             </label>
                                             <InputForm name='lastName' control={control} type='text' error={errors.lastName as FieldError} />
                                         </div>
                                         <div>
                                             <label htmlFor="email" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Email
+                                                {t('profile_email')}
                                             </label>
                                             <InputForm name='email' control={control} type='email' error={errors.email as FieldError} />
                                         </div>
                                         <div>
                                             <label htmlFor="phone" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Phone
+                                                {t('profile_phone')}
                                             </label>
                                             <InputForm name='phoneNumber' control={control} type='tel' error={errors.phoneNumber as FieldError} />
                                         </div>
                                     </div>
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Change Password</h3>
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">{t('profile_change_password')}</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div>
                                             <label htmlFor="current-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Current Password
+                                                {t('profile_current_password')}
                                             </label>
                                             <InputForm name='currentPassword' control={control} type='password' error={errors.currentPassword as FieldError}
                                                 placeholder="••••••••" />
@@ -189,26 +191,26 @@ export const Profile = () => {
                                         <div></div>
                                         <div>
                                             <label htmlFor="new-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                New Password
+                                                {t('profile_new_password')}
                                             </label>
                                             <InputForm name='password' control={control} type='password' error={errors.password as FieldError}
                                                 placeholder="••••••••" />
                                         </div>
                                         <div>
                                             <label htmlFor="confirm-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                                Confirm New Password
+                                                {t('profile_confirm_password')}
                                             </label>
                                             <InputForm name='confirmPassword' control={control} type='password' error={errors.confirmPassword as FieldError}
                                                 placeholder="••••••••" />
                                         </div>
                                     </div>
-                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Preferences</h3>
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-800">{t('profile_preferences')}</h3>
                                     <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                             <CheckboxForm
                                                 name="twoFactorEnabled"
                                                 control={control}
-                                                label="Enable two-factor authentication"
+                                                label={t('profile_2fa')}
                                                 error={errors.twoFactorEnabled}
                                             />
                                         </div>
@@ -216,7 +218,7 @@ export const Profile = () => {
                                             <CheckboxForm
                                                 name="receiveEmailNotifications"
                                                 control={control}
-                                                label="Receive email notifications"
+                                                label={t('profile_email_notifications')}
                                                 error={errors.receiveEmailNotifications}
                                             />
                                         </div>
@@ -226,7 +228,7 @@ export const Profile = () => {
                                                     <CheckboxForm
                                                         name="receiveMonthlyExpenseReport"
                                                         control={control}
-                                                        label="Receive monthly expense report"
+                                                        label={t('profile_monthly_report')}
                                                         error={errors.receiveMonthlyExpenseReport}
                                                     />
                                                 </div>
@@ -234,7 +236,7 @@ export const Profile = () => {
                                                     <CheckboxForm
                                                         name="receiveWeeklyExpenseReport"
                                                         control={control}
-                                                        label="Receive weekly expense report"
+                                                        label={t('profile_weekly_report')}
                                                         error={errors.receiveWeeklyExpenseReport}
                                                     />
                                                 </div>
@@ -242,7 +244,7 @@ export const Profile = () => {
                                                     <CheckboxForm
                                                         name="receiveBiweeklyExpenseReport"
                                                         control={control}
-                                                        label="Receive biweekly expense report"
+                                                        label={t('profile_biweekly_report')}
                                                         error={errors.receiveBiweeklyExpenseReport}
                                                     />
                                                 </div>
@@ -250,7 +252,7 @@ export const Profile = () => {
                                                     <CheckboxForm
                                                         name="sendWeeklyTransactionBackup"
                                                         control={control}
-                                                        label="Send weekly transaction backup"
+                                                        label={t('profile_weekly_backup')}
                                                         error={errors.sendWeeklyTransactionBackup}
                                                     />
                                                 </div>
@@ -280,14 +282,14 @@ export const Profile = () => {
                                             onClick={handleCancel}
                                             className="btn-modern btn-secondary"
                                         >
-                                            Cancel
+                                            {t('profile_cancel')}
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={!isDirty}
                                             className={`btn-modern ${isDirty ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
                                         >
-                                            {updateIsPending ? 'Guardando...' : ' Save Changes'}
+                                            {updateIsPending ? t('profile_saving') : t('profile_save')}
                                         </button>
                                     </div>
                                 </form>
