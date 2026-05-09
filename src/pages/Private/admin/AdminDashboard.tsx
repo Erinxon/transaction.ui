@@ -13,6 +13,8 @@ import type {
 } from '../../../core/admin/types/admin.types';
 import { useI18n } from '../../../core/i18n/useI18n';
 
+type Translator = ReturnType<typeof useI18n>['t'];
+
 const toDateRange = (from: string, to: string): DateRangeFilter => ({
   from: from || undefined,
   to: to || undefined,
@@ -42,7 +44,7 @@ const getJobStatusClassName = (job: ScheduledReportJob) => {
   return 'bg-rose-100 text-rose-800';
 };
 
-const getJobStatusLabel = (job: ScheduledReportJob, t: (key: string) => string) => {
+const getJobStatusLabel = (job: ScheduledReportJob, t: Translator) => {
   if (job.exists && job.isEnabled) {
     return t('admin_job_active');
   }
