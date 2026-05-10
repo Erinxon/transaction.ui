@@ -115,7 +115,59 @@ body {
 }
 
 .app-main {
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.app-topbar-header {
+	display: flex;
+	align-items: center;
+	padding: 10px 24px;
+	background: rgba(255, 255, 255, 0.72);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+	backdrop-filter: blur(12px);
+	position: sticky;
+	top: 0;
+	z-index: 40;
+	min-height: 56px;
+}
+
+.topbar-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	color: #4b6357;
+	font-size: 0.95rem;
+	transition: background 0.18s ease, color 0.18s ease;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.topbar-icon-btn:hover {
+	background: rgba(0, 0, 0, 0.07);
+	color: #1a3328;
+}
+
+.topbar-divider {
+	width: 1px;
+	height: 22px;
+	background: rgba(0, 0, 0, 0.12);
+	margin: 0 4px;
+}
+
+.topbar-logout-btn:hover {
+	background: rgba(239, 68, 68, 0.1);
+	color: #dc2626;
+}
+
+.app-main-content {
 	padding: 24px;
+	flex: 1;
 }
 
 .app-topbar {
@@ -366,11 +418,166 @@ body {
 	}
 
 	.app-main {
-		padding: 58px 14px 14px;
+		padding: 0;
+	}
+
+	.app-main-content {
+		padding: 14px;
 	}
 
 	.app-page {
 		padding: 16px;
 		border-radius: 16px;
 	}
+}
+
+/* ── Dark mode ─────────────────────────────────────────────── */
+[data-theme="dark"] {
+	--bg-0: #0b1610;
+	--bg-1: #0f1e16;
+	--surface: #152018;
+	--surface-soft: #1a2b1f;
+	--ink: #e2f0e8;
+	--muted: #7aaa8e;
+	--brand: #30d48a;
+	--brand-strong: #26b373;
+	--accent: #1b3828;
+	--danger: #e06262;
+	--success: #2fd47f;
+	--ring: rgba(48, 212, 138, 0.35);
+	--border: #2a4035;
+	--shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.4);
+	--shadow-panel: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] body {
+	background:
+		radial-gradient(circle at 10% 0%, rgba(30, 90, 58, 0.22), transparent 35%),
+		radial-gradient(circle at 90% 10%, rgba(18, 55, 70, 0.14), transparent 30%),
+		linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 100%);
+}
+
+[data-theme="dark"] .app-sidebar {
+	background: linear-gradient(165deg, #060e0a 0%, #040b07 100%);
+	border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .app-topbar-header {
+	background: rgba(10, 20, 14, 0.85);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .topbar-icon-btn {
+	color: #9ab8a6;
+}
+
+[data-theme="dark"] .topbar-icon-btn:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: #e2f0e8;
+}
+
+[data-theme="dark"] .topbar-divider {
+	background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .topbar-logout-btn:hover {
+	background: rgba(239, 68, 68, 0.15);
+	color: #f87171;
+}
+
+[data-theme="dark"] .app-page {
+	background: rgba(21, 32, 24, 0.88);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .auth-card {
+	background: rgba(21, 32, 24, 0.92);
+	border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="dark"] .table-modern th {
+	background: #1a2b20;
+	color: #7aaa8e;
+}
+
+[data-theme="dark"] .table-modern th,
+[data-theme="dark"] .table-modern td {
+	border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .table-modern tbody tr:hover {
+	background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .status-income {
+	background: #183525;
+	color: #4de896;
+}
+
+[data-theme="dark"] .status-expense {
+	background: #38181a;
+	color: #e07878;
+}
+
+[data-theme="dark"] .btn-secondary {
+	background: #1c2d22;
+	color: #c4dece;
+	border-color: var(--border);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+	background: #233528;
+}
+
+[data-theme="dark"] .btn-ghost {
+	color: #9fcab5;
+}
+
+[data-theme="dark"] .field-modern,
+[data-theme="dark"] .select-modern,
+[data-theme="dark"] .textarea-modern {
+	background: #1a2b20;
+	color: var(--ink);
+	border-color: var(--border);
+}
+
+[data-theme="dark"] .field-modern::placeholder,
+[data-theme="dark"] .textarea-modern::placeholder {
+	color: #557566;
+}
+
+[data-theme="dark"] .field-modern:hover,
+[data-theme="dark"] .select-modern:hover,
+[data-theme="dark"] .textarea-modern:hover {
+	border-color: #3d5e4a;
+}
+
+[data-theme="dark"] .password-toggle-btn {
+	color: var(--brand);
+}
+
+[data-theme="dark"] .password-toggle-btn:hover {
+	color: var(--brand-strong);
+}
+
+.theme-toggle-btn {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-radius: 12px;
+	padding: 12px 14px;
+	color: #c8ddd2;
+	font-weight: 500;
+	background: transparent;
+	border: none;
+	width: 100%;
+	cursor: pointer;
+	transition: 0.24s ease;
+	font-size: 0.93rem;
+	font-family: inherit;
+}
+
+.theme-toggle-btn:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: #f5fffa;
 }

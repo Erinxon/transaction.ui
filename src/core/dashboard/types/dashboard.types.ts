@@ -2,6 +2,28 @@ export interface ByYearRequest extends DashboardFilter {
     year: number;
 }
 
+export type DashboardDateRange =
+    | 'today'
+    | 'last_day'
+    | 'last_7d'
+    | 'this_month'
+    | 'last_month'
+    | 'last_4w'
+    | 'last_3_months'
+    | 'all'
+    | 'date_range';
+
+export interface DashboardSummaryRequest {
+    dateRange?: DashboardDateRange;
+    minAmount?: number;
+    maxAmount?: number;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    transactionTypeId?: 0 | 1;
+    categoryId?: number;
+}
+
 export interface ByYearResponse {
     monthId: number;
     monthName: number;

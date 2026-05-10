@@ -10,6 +10,7 @@ import { getAllCategories } from "../../../../core/Category/services/categoryApi
 import { TransactionType } from "../../../../core/Category/types/category.types";
 import type { TransactionResponse } from "../../../../core/transactions/types/transaction.types";
 import { useModalContext } from "../../../../components/Modal/context";
+import { useI18n } from "../../../../core/i18n/useI18n";
 
 interface Props {
     data: TransactionResponse | null,
@@ -19,6 +20,7 @@ interface Props {
 export const AddTransaction = ({ data, onSuccess }: Props) => {
     const { setIsOpen } = useModalContext()
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
+    const { t } = useI18n();
 
     const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(UserTransactionSchema),
@@ -126,17 +128,17 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
                 <RadioGroupForm
                     name="transactionTypeId"
                     control={control}
-                    label="Transaction Type"
+                    label={t('add_tx_type')}
                     options={[
-                        { value: 1, label: "Income" },
-                        { value: 2, label: "Expense" }
+                        { value: 1, label: t('tx_type_income') },
+                        { value: 2, label: t('tx_type_expense') }
                     ]}
                     error={errors.transactionTypeId}
                 />
             </div>
 
             <div className="mb-4">
-                <label htmlFor="amount" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Amount</label>
+                <label htmlFor="amount" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{t('add_tx_amount')}</label>
                 <div className="flex items-center rounded-xl border border-[#cedbd4] bg-[#fcfffd] px-3 focus-within:ring-4 focus-within:ring-[var(--ring)]">
                     <span className="text-sm font-semibold text-gray-500">$</span>
                     <InputForm name='amount' control={control} type='number' placeholder='0.00'
@@ -148,16 +150,16 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             </div>
 
             <div className="mb-4">
-                <label htmlFor="date" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Date</label>
+                <label htmlFor="date" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{t('add_tx_date')}</label>
                 <InputForm name='date' control={control} type='date' error={errors.date as FieldError}
                     className="field-modern" />
             </div>
 
             <div className="mb-4">
-                <label htmlFor="category" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Category</label>
+                <label htmlFor="category" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{t('add_tx_category')}</label>
                 <SelectForm name='categoryId' control={control} error={errors.categoryId}
                     className="select-modern"
-                    placeholder={selectedTransactionType > 0 ? "Select a category" : "Select a transaction type first"}
+                    placeholder={selectedTransactionType > 0 ? t('add_tx_select_category') : t('add_tx_select_type_first')}
                     options={categories?.map(category => ({
                         id: category.id,
                         label: category.name
@@ -165,10 +167,10 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
             </div>
 
             <div className="mb-6">
-                <label htmlFor="comment" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Comment</label>
+                <label htmlFor="comment" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{t('add_tx_comment')}</label>
                 <TextAreaForm name='description' control={control} error={errors.description}
                     className="textarea-modern"
-                    placeholder="Add a comment..." />
+                    placeholder={t('add_tx_comment_placeholder')} />
             </div>
 
             {errorMsg.length > 0 && (
@@ -189,10 +191,10 @@ export const AddTransaction = ({ data, onSuccess }: Props) => {
 
             <div className="flex justify-end space-x-3">
                 <button type="button" onClick={handlerCancel} className="btn-modern btn-secondary" id="cancel-add-btn">
-                    Cancel
+                    {t('add_tx_cancel')}
                 </button>
                 <button type="submit" className="btn-modern btn-primary">
-                    {isPending || updateIsPending ? 'Guardando...' : 'Save Transaction'}
+                    {isPending || updateIsPending ? t('add_tx_saving') : t('add_tx_save')}
                 </button>
             </div>
         </form>

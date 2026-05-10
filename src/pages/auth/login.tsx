@@ -11,9 +11,11 @@ import { verifyTwoFactorCode } from '../../core/auth/services/authApi';
 import { useAuth } from '../../core/auth/context/useAuth';
 import { isAdminToken } from '../../utils';
 import { AppRoutes } from '../../models/AppRoutes';
+import { useI18n } from '../../core/i18n/useI18n';
 
 export const Login = () => {
     const navigate = useNavigate()
+    const { t } = useI18n()
     const [errorMsg, setErrorMsg] = useState('')
     const [infoMsg, setInfoMsg] = useState('')
     const [isTwoFactorStep, setIsTwoFactorStep] = useState(false)
@@ -42,9 +44,9 @@ export const Login = () => {
         onError: (error) => {
             const axiosError = error as AxiosError;
             if (axiosError.response?.status === 401 || axiosError.response?.status === 400) {
-                setErrorMsg('El código de verificación es inválido');
+                setErrorMsg(t('login_error_invalid_code'));
             } else {
-                setErrorMsg('Error verificando el código, intenta más tarde');
+                setErrorMsg(t('login_error_verify'));
             }
         }
     });
@@ -63,7 +65,7 @@ export const Login = () => {
 
         if (isTwoFactorStep) {
             if (!formData.code?.trim()) {
-                setErrorMsg('Debes ingresar el código de verificación');
+                setErrorMsg(t('login_2fa_required_code'));
                 return;
             }
 
@@ -82,7 +84,7 @@ export const Login = () => {
             onSuccess: (response) => {
                 if (response.requiresTwoFactor) {
                     setIsTwoFactorStep(true);
-                    setInfoMsg(response.message ?? 'Se envió un código a tu correo para continuar.');
+                    setInfoMsg(response.message ?? t('login_2fa_sent'));
                     return;
                 }
 
@@ -93,9 +95,9 @@ export const Login = () => {
             onError: (error) => {
                 const axiosError = error as AxiosError;
                 if (axiosError.response?.status === 401) {
-                    setErrorMsg('Credenciales incorrectas');
+                    setErrorMsg(t('login_error_credentials'));
                 } else {
-                    setErrorMsg('Error inesperado, intenta más tarde');
+                    setErrorMsg(t('login_error_unexpected'));
                 }
             }
         });
@@ -115,16 +117,16 @@ export const Login = () => {
                 <div className="auth-card">
                     <div className="mb-8 text-center">
                         <h1 className="page-title">Pulse Ledger</h1>
-                        <p className="page-subtitle">Controla tus finanzas con una interfaz clara y rapida.</p>
+                        <p className="page-subtitle">{t('login_subtitle')}</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <div className="mb-4">
-                            <InputForm name='email' control={control} label='Email' type='string' error={errors.email} placeholder='your@email.com' />
+                            <InputForm name='email' control={control} label={t('login_email')} type='string' error={errors.email} placeholder='your@email.com' />
                         </div>
 
                         <div className="mb-4">
-                            <InputForm name='password' control={control} label='Password' type='password' error={errors.password} placeholder='your password' />
+                            <InputForm name='password' control={control} label={t('login_password')} type='password' error={errors.password} placeholder='••••••••' />
                         </div>
 
                         {isTwoFactorStep && (
@@ -132,10 +134,10 @@ export const Login = () => {
                                 <InputForm
                                     name='code'
                                     control={control}
-                                    label='2FA Code'
+                                    label={t('login_2fa_code')}
                                     type='text'
                                     error={errors.code}
-                                    placeholder='Ingresa el código de verificación'
+                                    placeholder={t('login_2fa_placeholder')}
                                 />
                             </div>
                         )}
@@ -147,7 +149,7 @@ export const Login = () => {
                                 onClick={handleForgotPassword}
                                 className="cursor-pointer text-sm font-medium text-emerald-700 hover:text-emerald-600"
                             >
-                                Forgot your password?
+                                {t('login_forgot_password')}
                             </a>
                         </div>
 
@@ -156,7 +158,7 @@ export const Login = () => {
                             disabled={isPending}
                             className={`btn-modern btn-primary w-full py-3 ${isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            {isPending ? 'Procesando...' : isTwoFactorStep ? 'Verificar código' : ' Sign in'}
+                            {isPending ? t('login_processing') : isTwoFactorStep ? t('login_verify') : t('login_submit')}
                         </button>
 
                         {infoMsg && (
@@ -170,8 +172,8 @@ export const Login = () => {
 
                     <div className="mt-6 text-center">
                         <p className="text-sm text-gray-600">
-                            Don't have an account?
-                            <a onClick={handleRegister} className="cursor-pointer font-medium text-emerald-700 hover:text-emerald-600"> Sign up</a>
+                            {t('login_no_account')}
+                            <a onClick={handleRegister} className="cursor-pointer font-medium text-emerald-700 hover:text-emerald-600"> {t('login_sign_up')}</a>
                         </p>
                     </div>
                 </div>

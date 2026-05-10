@@ -6,6 +6,7 @@ import { Modal } from "./Modal/Modal"
 import { useQuery } from "@tanstack/react-query"
 import { getAllCategories } from "../core/Category/services/categoryApi"
 import { TransactionType } from "../core/Category/types/category.types"
+import { useI18n } from "../core/i18n/useI18n"
 
 interface AdvancedFilterModalProps {
   filters: DashboardFilter
@@ -13,22 +14,12 @@ interface AdvancedFilterModalProps {
   hideDateFilters?: boolean
 }
 
-const dateRangeList: { key: string, name: string }[] = [
-  { key: 'all', name: 'Todo' },
-  { key: 'today', name: 'Hoy' },
-  { key: 'last_day', name: 'Última dia' },
-  { key: 'last_7d', name: 'Últimos 7 días' },
-  { key: 'last_4w', name: 'Últimas 4 semanas' },
-  { key: 'this_month', name: 'Este mes' },
-  { key: 'last_3_months', name: 'Últimos 3 meses' },
-  { key: 'date_range', name: 'Rango de fechas' }
-]
-
 export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters = false }: AdvancedFilterModalProps) => {
   const [localFilters, setLocalFilters] = useState<DashboardFilter>(filters)
   const [isSelectOpen, setIsSelectOpen] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
   const { isOpen, setIsOpen } = useModalContext();
+  const { t } = useI18n();
   const selectedTransactionType = localFilters.transactionTypeId ? Number(localFilters.transactionTypeId) : null;
 
   const { data: categories } = useQuery({
@@ -72,9 +63,9 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
   const activeFiltersCount = getActiveFiltersCount()
 
   const getTransactionTypeLabel = () => {
-    if (localFilters.transactionTypeId === 1) return "Ingreso"
-    if (localFilters.transactionTypeId === 2) return "Gasto"
-    return "Seleccionar tipo..."
+    if (localFilters.transactionTypeId === 1) return t('tx_type_income')
+    if (localFilters.transactionTypeId === 2) return t('tx_type_expense')
+    return t('af_select_type')
   }
 
   useEffect(() => {
@@ -100,19 +91,19 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
 
   return (
     <>
-      <Modal title="Filtros Avanzados"
+      <Modal title={t('af_title')}
         icon={<Filter className="w-5 h-5 text-emerald-600 mr-2" />}
-        description="Personaliza los filtros para encontrar exactamente lo que buscas">
+        description={t('af_description')}>
         <>
           <div>
             <div className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <FileText className="w-4 h-4 text-gray-500 mr-2" />
-                Descripción
+                {t('af_description_label')}
               </label>
               <input
                 type="text"
-                placeholder="Buscar por descripción..."
+                placeholder={t('af_description_placeholder')}
                 value={localFilters.description || ""}
                 onChange={(e) => handleInputChange("description", e.target.value)}
                 className="field-modern"
@@ -122,11 +113,11 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
             <div className="mt-2">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <DollarSign className="w-4 h-4 text-gray-500 mr-2" />
-                Rango de Montos
+                {t('af_amount_range')}
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-500">Monto mínimo</label>
+                  <label className="text-xs text-gray-500">{t('af_min_amount')}</label>
                   <input
                     type="number"
                     placeholder="0.00"
@@ -136,7 +127,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-gray-500">Monto máximo</label>
+                  <label className="text-xs text-gray-500">{t('af_max_amount')}</label>
                   <input
                     type="number"
                     placeholder="999999.99"
@@ -153,13 +144,20 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                 <div className="space-y-1 mt-2">
                   <label className="flex items-center text-sm font-medium text-gray-700">
                     <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                    Periodo predefinido
+                    {t('af_preset_period')}
                   </label>
                   <div className="space-y-2">
                     <select id="date-range-preset" className="select-modern"
                       value={localFilters.dateRange || ""}
                       onChange={(e) => handleInputChange("dateRange", e.target.value)}>
-                      {dateRangeList?.map((dataRange) => <option key={dataRange.key} value={dataRange.key}>{dataRange.name}</option>)}
+                      <option value="all">{t('dr_all')}</option>
+                      <option value="today">{t('dr_today')}</option>
+                      <option value="last_day">{t('dr_last_day')}</option>
+                      <option value="last_7d">{t('dr_last_7d')}</option>
+                      <option value="last_4w">{t('dr_last_4w')}</option>
+                      <option value="this_month">{t('dr_this_month')}</option>
+                      <option value="last_3_months">{t('dr_last_3_months')}</option>
+                      <option value="date_range">{t('dr_date_range')}</option>
                     </select>
                   </div>
                 </div>
@@ -167,11 +165,11 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                   <div className="mt-2">
                     <label className="flex items-center text-sm font-medium text-gray-700">
                       <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                      Rango de Fechas
+                      {t('af_date_range')}
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-xs text-gray-500">Fecha inicio</label>
+                        <label className="text-xs text-gray-500">{t('af_start_date')}</label>
                         <input
                           type="date"
                           value={localFilters.startDate || ""}
@@ -180,7 +178,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs text-gray-500">Fecha fin</label>
+                        <label className="text-xs text-gray-500">{t('af_end_date')}</label>
                         <input
                           type="date"
                           value={localFilters.endDate || ""}
@@ -198,7 +196,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
             <div className="space-y-1 mt-2">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <ArrowRightLeft className="w-4 h-4 text-gray-500 mr-2" />
-                Tipo de Transacción
+                {t('af_tx_type')}
               </label>
               <div className="relative" ref={selectRef}>
                 <button
@@ -227,7 +225,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                       }}
                       className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100"
                     >
-                      <span className="block truncate">Todos los tipos</span>
+                      <span className="block truncate">{t('af_all_types')}</span>
                     </div>
                     <div
                       onClick={() => {
@@ -238,7 +236,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                     >
                       <div className="flex items-center">
                         <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                        <span className="block truncate">Ingreso</span>
+                        <span className="block truncate">{t('tx_type_income')}</span>
                       </div>
                     </div>
                     <div
@@ -250,7 +248,7 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
                     >
                       <div className="flex items-center">
                         <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                        <span className="block truncate">Gasto</span>
+                        <span className="block truncate">{t('tx_type_expense')}</span>
                       </div>
                     </div>
                   </div>
@@ -261,13 +259,13 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
             <div className="space-y-1 mt-2">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <Tag  className="w-4 h-4 text-gray-500 mr-2" />
-                Categoría
+                {t('af_category')}
               </label>
               <div className="space-y-2">
                 <select id="categoryId" className="select-modern"
                   value={localFilters.categoryId || ""}
                   onChange={(e) => handleInputChange("categoryId", e.target.value ? Number(e.target.value) : null)}>
-                    <option key={0} value="">Todo</option>
+                    <option key={0} value="">{t('tx_filter_all')}</option>
                   {categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                 </select>
               </div>
@@ -278,14 +276,13 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
               <div className="mt-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-emerald-800">
-                    {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo
-                    {activeFiltersCount > 1 ? "s" : ""}
+                    {activeFiltersCount === 1 ? t('af_active_one') : t('af_active_many', { n: activeFiltersCount })}
                   </span>
                   <button
                     onClick={clearFilters}
                     className="text-sm text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100 px-2 py-1 rounded transition-colors duration-200"
                   >
-                    Limpiar todo
+                    {t('af_clear_all')}
                   </button>
                 </div>
               </div>
@@ -296,13 +293,13 @@ export const AdvancedFilterModal = ({ filters, onFiltersChange, hideDateFilters 
               onClick={() => setIsOpen(false)}
               className="btn-modern btn-secondary"
             >
-              Cancelar
+              {t('af_cancel')}
             </button>
             <button
               onClick={applyFilters}
               className="btn-modern btn-primary"
             >
-              Aplicar Filtros
+              {t('af_apply')}
             </button>
           </div>
         </>

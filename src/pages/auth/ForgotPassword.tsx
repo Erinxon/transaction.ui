@@ -11,6 +11,7 @@ import {
   ForgotPasswordSchema,
   type ForgotPasswordFormValues,
 } from '../../models/shemas/forgot-password.schema';
+import { useI18n } from '../../core/i18n/useI18n';
 
 type ErrorResponse = {
   errors?: Record<string, string[]>;
@@ -21,10 +22,11 @@ const extractValidationErrors = (error: AxiosError): string[] => {
   if (responseData?.errors && typeof responseData.errors === 'object') {
     return Object.values(responseData.errors).flat();
   }
-  return ['Ha ocurrido un error inesperado al procesar la solicitud'];
+  return [];
 };
 
 export const ForgotPassword = () => {
+  const { t } = useI18n();
   const [errorMsg, setErrorMsg] = useState<string[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -37,7 +39,7 @@ export const ForgotPassword = () => {
     mutationFn: forgotPassword,
     onSuccess: (response) => {
       setErrorMsg([]);
-      setSuccessMsg(response.message ?? 'Si el correo existe, te enviaremos un enlace para restablecer la contrasena.');
+      setSuccessMsg(response.message ?? t('fp_success_default'));
     },
   });
 
@@ -50,9 +52,9 @@ export const ForgotPassword = () => {
         onError: (error) => {
           const axiosError = error as AxiosError;
           if (axiosError.response?.status === 400) {
-            setErrorMsg(extractValidationErrors(axiosError));
+            setErrorMsg(extractValidationErrors(axiosError).length > 0 ? extractValidationErrors(axiosError) : [t('fp_error_request')]);
           } else {
-            setErrorMsg(['Ha ocurrido un error inesperado al enviar el correo']);
+            setErrorMsg([t('fp_error_send')]);
           }
           setSuccessMsg('');
         },
@@ -64,8 +66,8 @@ export const ForgotPassword = () => {
     <div className="auth-shell fade-in-up">
       <div className="auth-card">
         <div className="mb-8 text-center">
-          <h1 className="page-title">Recuperar contrasena</h1>
-          <p className="page-subtitle">Ingresa tu email para recibir el enlace de restablecimiento.</p>
+          <h1 className="page-title">{t('fp_title')}</h1>
+          <p className="page-subtitle">{t('fp_subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -106,15 +108,14 @@ export const ForgotPassword = () => {
           )}
 
           <button type="submit" className="btn-modern btn-primary w-full py-3">
-            {isPending ? 'Enviando...' : 'Enviar enlace'}
+            {isPending ? t('fp_sending') : t('fp_submit')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Recordaste tu contrasena?{' '}
             <Link to="/login" className="font-medium text-emerald-700 hover:text-emerald-600">
-              Iniciar sesion
+              {t('fp_back_to_login')}
             </Link>
           </p>
         </div>

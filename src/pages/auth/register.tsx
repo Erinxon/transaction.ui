@@ -7,9 +7,11 @@ import { Alert, CheckboxForm, InputForm } from "../../components";
 import { RegisterSchema, RegisterSchemaFormValuesEmptyValue, type RegisterSchemaFormValues } from "../../models/shemas/register.shema";
 import { register } from "../../core/auth/services/authApi";
 import { Link, useNavigate } from "react-router-dom";
+import { useI18n } from "../../core/i18n/useI18n";
 
 export const Register = () => {
     const navigate = useNavigate();
+    const { t } = useI18n();
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
 
     const { control, handleSubmit, setValue, watch, formState: { errors, isDirty } } = useForm({
@@ -56,7 +58,7 @@ export const Register = () => {
                 if (axiosError.response?.status === 400) {
                     setErrorMsg(extractValidationErrors(axiosError));
                 } else {
-                    setErrorMsg(['Ha ocurrido un error inesperado al actualizar los datos']);
+                    setErrorMsg([t('reg_error_unexpected')]);
                 }
             }
         });
@@ -71,7 +73,7 @@ export const Register = () => {
         if (responseData?.errors && typeof responseData.errors === 'object') {
             return Object.values(responseData.errors).flat();
         }
-        return ['Ha ocurrido un error inesperado al guardar el registro'];
+        return [t('reg_error_save')];
     };
 
     return (
@@ -79,34 +81,34 @@ export const Register = () => {
             <div className="auth-shell fade-in-up">
                 <div className="auth-card">
                     <div className="mb-6 flex justify-center items-center">
-                        <h1 className="page-title text-center">Create account</h1>
+                        <h1 className="page-title text-center">{t('reg_title')}</h1>
                     </div>
                     <div >
-                        <h3 className="mb-4 text-lg font-semibold text-gray-800">Personal Information</h3>
+                        <h3 className="mb-4 text-lg font-semibold text-gray-800">{t('reg_personal_info')}</h3>
 
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
                                     <label htmlFor="first-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        First Name
+                                        {t('reg_first_name')}
                                     </label>
                                     <InputForm name='firstName' control={control} type='text' error={errors.firstName as FieldError} />
                                 </div>
                                 <div>
                                     <label htmlFor="last-name" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Last Name
+                                        {t('reg_last_name')}
                                     </label>
                                     <InputForm name='lastName' control={control} type='text' error={errors.lastName as FieldError} />
                                 </div>
                                 <div>
                                     <label htmlFor="email" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Email
+                                        {t('reg_email')}
                                     </label>
                                     <InputForm name='email' control={control} type='email' error={errors.email as FieldError} />
                                 </div>
                                 <div>
                                     <label htmlFor="phone" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Phone
+                                        {t('reg_phone')}
                                     </label>
                                     <InputForm name='phoneNumber' control={control} type='tel' error={errors.phoneNumber as FieldError} />
                                 </div>
@@ -114,26 +116,26 @@ export const Register = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
                                     <label htmlFor="new-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Password
+                                        {t('reg_password')}
                                     </label>
                                     <InputForm name='password' control={control} type='password' error={errors.password as FieldError}
                                         placeholder="••••••••" />
                                 </div>
                                 <div>
                                     <label htmlFor="confirm-password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Confirm New Password
+                                        {t('reg_confirm_password')}
                                     </label>
                                     <InputForm name='confirmPassword' control={control} type='password' error={errors.confirmPassword as FieldError}
                                         placeholder="••••••••" />
                                 </div>
                             </div>
-                            <h3 className="mb-4 text-lg font-semibold text-gray-800">Preferences</h3>
+                            <h3 className="mb-4 text-lg font-semibold text-gray-800">{t('reg_preferences')}</h3>
                             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2">
                                     <CheckboxForm
                                         name="receiveEmailNotifications"
                                         control={control}
-                                        label="Receive email notifications"
+                                        label={t('reg_notif')}
                                         error={errors.receiveEmailNotifications}
                                     />
                                 </div>
@@ -143,7 +145,7 @@ export const Register = () => {
                                             <CheckboxForm
                                                 name="receiveMonthlyExpenseReport"
                                                 control={control}
-                                                label="Receive monthly expense report"
+                                                label={t('reg_monthly_report')}
                                                 error={errors.receiveMonthlyExpenseReport}
                                             />
                                         </div>
@@ -151,7 +153,7 @@ export const Register = () => {
                                             <CheckboxForm
                                                 name="receiveWeeklyExpenseReport"
                                                 control={control}
-                                                label="Receive weekly expense report"
+                                                label={t('reg_weekly_report')}
                                                 error={errors.receiveWeeklyExpenseReport}
                                             />
                                         </div>
@@ -159,7 +161,7 @@ export const Register = () => {
                                             <CheckboxForm
                                                 name="receiveBiweeklyExpenseReport"
                                                 control={control}
-                                                label="Receive biweekly expense report"
+                                                label={t('reg_biweekly_report')}
                                                 error={errors.receiveBiweeklyExpenseReport}
                                             />
                                         </div>
@@ -167,7 +169,7 @@ export const Register = () => {
                                             <CheckboxForm
                                                 name="sendWeeklyTransactionBackup"
                                                 control={control}
-                                                label="Send weekly transaction backup"
+                                                label={t('reg_weekly_backup')}
                                                 error={errors.sendWeeklyTransactionBackup}
                                             />
                                         </div>
@@ -197,16 +199,16 @@ export const Register = () => {
                                     disabled={!isDirty}
                                     className={`w-full btn-modern ${isDirty ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
                                 >
-                                    {updateIsPending ? 'Guardando...' : 'Register'}
+                                    {updateIsPending ? t('reg_creating') : t('reg_submit')}
                                 </button>
                             </div>
 
 
                             <div className="flex justify-center w-full mt-4">
                                 <p className="text-sm text-gray-600">
-                                    ¿Ya tienes una cuenta?{' '}
+                                    {t('reg_have_account')}{' '}
                                     <Link to="/login" className="font-medium text-emerald-700 hover:underline">
-                                        Inicia sesión
+                                        {t('reg_login')}
                                     </Link>
                                 </p>
                             </div>

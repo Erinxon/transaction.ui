@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { DashboardFilter } from "../../../core/dashboard/types/dashboard.types";
+import type { DashboardFilter, SummaryResponse } from "../../../core/dashboard/types/dashboard.types";
 import { getAllCategories } from "../../../core/Category/services/categoryApi";
 import { TransactionType } from "../../../core/Category/types/category.types";
 import {
@@ -11,6 +11,7 @@ import {
     importTransactions,
 } from "../../../core/transactions/services/transactionApi";
 import type { ImportResponse, TransactionRequest, TransactionResponse } from "../../../core/transactions/types/transaction.types";
+import { summary } from "../../../core/dashboard/services/dashboardApi";
 import { AdvancedFilterModal } from "../../../components/AdvancedFilterModal";
 import { Alert, ConfirmDialog, Modal, NotSort } from "../../../components";
 import { useModalContext } from "../../../components/Modal/context";
@@ -18,6 +19,7 @@ import FormattedNumber from "../../../components/FormattedNumber";
 import Pagination from "../../../components/Pagination";
 import { SkeletonRow } from "../../../components/SkeletonRow";
 import { AddTransaction } from "./components/AddTransaction";
+import { useI18n } from "../../../core/i18n/useI18n";
 
 const triggerDownload = (blob: Blob, fileName: string) => {
     const url = URL.createObjectURL(blob);
@@ -43,6 +45,7 @@ export const Transactions = () => {
     const queryClient = useQueryClient();
     const { setIsOpen } = useModalContext();
     const importInputRef = useRef<HTMLInputElement | null>(null);
+    const { t, locale } = useI18n();
 
     const [currentModal, setCurrentModal] = useState<"add" | "filter" | "delete" | "calendar-day">("add");
     const [page, setPage] = useState(1);
@@ -102,9 +105,27 @@ export const Transactions = () => {
         };
     }, [filters, isCalendarView, monthEnd, monthStart, page, perPage, sortDirection, sortField]);
 
+    const summaryRequest = useMemo<DashboardFilter>(() => {
+        if (!isCalendarView) {
+            return filters;
+        }
+
+        return {
+            ...filters,
+            dateRange: "date_range",
+            startDate: formatDateToApi(monthStart),
+            endDate: formatDateToApi(monthEnd),
+        };
+    }, [filters, isCalendarView, monthEnd, monthStart]);
+
     const { isLoading, error, data } = useQuery({
         queryKey: ["allTransactions", requestParams],
         queryFn: ({ queryKey }) => getAllTransactions(queryKey[1] as TransactionRequest),
+    });
+
+    const { data: summaryData } = useQuery<SummaryResponse>({
+        queryKey: ["transactionsSummary", summaryRequest],
+        queryFn: () => summary(summaryRequest),
     });
 
     const { mutate: mutateDelete } = useMutation({
@@ -130,11 +151,11 @@ export const Transactions = () => {
         onSuccess: (blob) => {
             triggerDownload(blob, "transacciones_export.xlsx");
             setErrorMessage("");
-            setFeedbackMessage("Exportacion completada. Se descargo el archivo Excel de transacciones.");
+            setFeedbackMessage(t('tx_export_success'));
         },
         onError: () => {
             setFeedbackMessage("");
-            setErrorMessage("No se pudo exportar el archivo Excel de transacciones.");
+            setErrorMessage(t('tx_error'));
         },
     });
 
@@ -143,11 +164,11 @@ export const Transactions = () => {
         onSuccess: (blob) => {
             triggerDownload(blob, "plantilla_transacciones.xlsx");
             setErrorMessage("");
-            setFeedbackMessage("Plantilla descargada. Puedes completarla y luego importarla en esta pantalla.");
+            setFeedbackMessage(t('tx_downloading'));
         },
         onError: () => {
             setFeedbackMessage("");
-            setErrorMessage("No se pudo descargar la plantilla de transacciones.");
+            setErrorMessage(t('tx_error'));
         },
     });
 
@@ -260,7 +281,7 @@ export const Transactions = () => {
 
         if (!file.name.toLowerCase().endsWith(".xlsx")) {
             setFeedbackMessage("");
-            setErrorMessage("El archivo debe ser un Excel (.xlsx).");
+            setErrorMessage(t('tx_import_error_xlsx'));
             event.target.value = "";
             return;
         }
@@ -269,9 +290,18 @@ export const Transactions = () => {
         event.target.value = "";
     };
 
-    const transactions = data?.items ?? [];
+    const transactions = useMemo(() => data?.items ?? [], [data?.items]);
 
-    const weekDays = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
+    const weekDays = useMemo(() => [
+        t('dr_all').substring(0,3), // placeholder
+        locale === 'es' ? "Dom" : "Sun",
+        locale === 'es' ? "Lun" : "Mon",
+        locale === 'es' ? "Mar" : "Tue",
+        locale === 'es' ? "Mie" : "Wed",
+        locale === 'es' ? "Jue" : "Thu",
+        locale === 'es' ? "Vie" : "Fri",
+        locale === 'es' ? "Sab" : "Sat",
+    ].slice(1), [locale, t]);
 
     const getDayKey = (dateValue: Date | string) => {
         const date = new Date(dateValue);
@@ -302,8 +332,8 @@ export const Transactions = () => {
     }, [transactions]);
 
     const calendarMonthLabel = useMemo(() => {
-        return calendarCursor.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
-    }, [calendarCursor]);
+        return calendarCursor.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: "long", year: "numeric" });
+    }, [calendarCursor, locale]);
 
     const calendarCells = useMemo(() => {
         const year = calendarCursor.getFullYear();
@@ -387,21 +417,21 @@ export const Transactions = () => {
             <section className="app-page fade-in-up">
                 <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                        <h1 className="page-title">Transactions</h1>
-                        <p className="page-subtitle">Registra, filtra y ordena tus movimientos de forma rapida.</p>
+                        <h1 className="page-title">{t('tx_title')}</h1>
+                        <p className="page-subtitle">{t('tx_subtitle')}</p>
                     </div>
                     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-2 xl:flex xl:flex-wrap xl:justify-end">
                         <button onClick={handleAdd} className="btn-modern btn-primary w-full justify-center lg:w-auto">
-                            <i className="fas fa-plus mr-2"></i> Nuevo movimiento
+                            <i className="fas fa-plus mr-2"></i> {t('tx_new')}
                         </button>
                         <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleTemplateDownload} disabled={isDownloadingTemplate}>
-                            <i className="fas fa-file-arrow-down mr-2"></i> {isDownloadingTemplate ? "Descargando..." : "Plantilla Excel"}
+                            <i className="fas fa-file-arrow-down mr-2"></i> {isDownloadingTemplate ? t('tx_downloading') : t('tx_template')}
                         </button>
                         <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleExport} disabled={isExporting}>
-                            <i className="fas fa-file-export mr-2"></i> {isExporting ? "Exportando..." : "Exportar Excel"}
+                            <i className="fas fa-file-export mr-2"></i> {isExporting ? t('tx_downloading') : t('tx_export')}
                         </button>
                         <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleImportClick} disabled={isImporting}>
-                            <i className="fas fa-file-import mr-2"></i> {isImporting ? "Importando..." : "Importar Excel"}
+                            <i className="fas fa-file-import mr-2"></i> {isImporting ? t('tx_downloading') : t('tx_import')}
                         </button>
                         <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportFile} disabled={isImporting} />
                     </div>
@@ -415,7 +445,7 @@ export const Transactions = () => {
                         <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:w-auto md:grid-cols-2">
                             <div>
                                 <label htmlFor="transaction-type" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                    Tipo
+                                    {t('tx_filter_type')}
                                 </label>
                                 <select
                                     id="transaction-type"
@@ -423,15 +453,15 @@ export const Transactions = () => {
                                     value={filters.transactionTypeId || ""}
                                     onChange={(e) => handleInputChange("transactionTypeId", e.target.value ? Number(e.target.value) : null)}
                                 >
-                                    <option value="">Todo</option>
-                                    <option value={1}>Ingreso</option>
-                                    <option value={2}>Gasto</option>
+                                    <option value="">{t('tx_filter_all')}</option>
+                                    <option value={1}>{t('tx_type_income')}</option>
+                                    <option value={2}>{t('tx_type_expense')}</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label htmlFor="category" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                    Categoria
+                                    {t('tx_filter_category')}
                                 </label>
                                 <select
                                     id="category"
@@ -440,7 +470,7 @@ export const Transactions = () => {
                                     onChange={(e) => handleInputChange("categoryId", e.target.value ? Number(e.target.value) : null)}
                                 >
                                     <option key={0} value="">
-                                        Todo
+                                        {t('tx_filter_all')}
                                     </option>
                                     {categories?.map((category) => (
                                         <option key={category.id} value={category.id}>
@@ -452,7 +482,7 @@ export const Transactions = () => {
                         </div>
 
                         <button id="advanced-filter-toggle" className="btn-modern btn-ghost w-full justify-center sm:w-auto" onClick={() => handleShowModal("filter")}>
-                            <i className="fas fa-sliders mr-2"></i> Filtros avanzados
+                            <i className="fas fa-sliders mr-2"></i> {t('tx_advanced_filters')}
                         </button>
                     </div>
                 </div>
@@ -465,21 +495,21 @@ export const Transactions = () => {
                                 onClick={() => setViewMode("list")}
                                 type="button"
                             >
-                                <i className="fas fa-table mr-2"></i> Tabla
+                                <i className="fas fa-table mr-2"></i> {t('tx_view_table')}
                             </button>
                             <button
                                 className={`btn-modern ${viewMode === "grid" ? "btn-primary" : "btn-secondary"}`}
                                 onClick={() => setViewMode("grid")}
                                 type="button"
                             >
-                                <i className="fas fa-grip mr-2"></i> Cuadricula
+                                <i className="fas fa-grip mr-2"></i> {t('tx_view_grid')}
                             </button>
                             <button
                                 className={`btn-modern ${viewMode === "calendar" ? "btn-primary" : "btn-secondary"}`}
                                 onClick={() => setViewMode("calendar")}
                                 type="button"
                             >
-                                <i className="fas fa-calendar-days mr-2"></i> Calendario
+                                <i className="fas fa-calendar-days mr-2"></i> {t('tx_view_calendar')}
                             </button>
                         </div>
 
@@ -494,6 +524,27 @@ export const Transactions = () => {
                                 </button>
                             </div>
                         )}
+
+                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+                            <div className="flex items-center justify-between gap-3 rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-900 sm:min-w-[180px]">
+                                <span className="inline-flex items-center gap-2 font-medium">
+                                    <i className="fas fa-arrow-up text-xs text-emerald-600" />
+                                    {t('dash_income')}
+                                </span>
+                                <span className="font-semibold">
+                                    <FormattedNumber value={summaryData?.income ?? 0} isAmount={true} />
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3 rounded-full border border-rose-200 bg-rose-50/80 px-3 py-2 text-sm text-rose-900 sm:min-w-[180px]">
+                                <span className="inline-flex items-center gap-2 font-medium">
+                                    <i className="fas fa-arrow-down text-xs text-rose-600" />
+                                    {t('dash_expenses')}
+                                </span>
+                                <span className="font-semibold">
+                                    <FormattedNumber value={summaryData?.expenses ?? 0} isAmount={true} />
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -506,9 +557,9 @@ export const Transactions = () => {
                                         <div key={index} className="h-28 animate-pulse rounded-xl border border-gray-200 bg-gray-100"></div>
                                     ))
                                 ) : error ? (
-                                    <Alert type="error" message="Error cargando transacciones" />
+                                    <Alert type="error" message={t('tx_error_loading')} />
                                 ) : transactions.length === 0 ? (
-                                    renderEmptyState("No hay transacciones para mostrar en lista.")
+                                    renderEmptyState(t('tx_empty'))
                                 ) : (
                                     transactions.map((item) => (
                                         <article key={item.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
@@ -518,7 +569,7 @@ export const Transactions = () => {
                                                 </span>
                                                 <span className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</span>
                                             </div>
-                                            <p className="mb-2 text-sm text-gray-600">{item.description || "Sin descripcion"}</p>
+                                            <p className="mb-2 text-sm text-gray-600">{item.description || t('tx_no_description')}</p>
                                             <div className="flex items-center justify-between gap-2">
                                                 <span
                                                     className={`text-sm font-bold ${
@@ -539,19 +590,19 @@ export const Transactions = () => {
                                     <thead>
                                         <tr>
                                             <th onClick={() => handleSort("Date")} className="cursor-pointer text-left">
-                                                Date {sortField === "Date" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {t('tx_col_date')} {sortField === "Date" && (sortDirection === "ascending" ? "▲" : "▼")}
                                                 {sortField !== "Date" && <NotSort />}
                                             </th>
                                             <th onClick={() => handleSort("Category")} className="cursor-pointer text-left">
-                                                Category {sortField === "Category" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {t('tx_col_category')} {sortField === "Category" && (sortDirection === "ascending" ? "▲" : "▼")}
                                                 {sortField !== "Category" && <NotSort />}
                                             </th>
-                                            <th className="text-left">Comment</th>
+                                            <th className="text-left">{t('tx_col_description')}</th>
                                             <th onClick={() => handleSort("Amount")} className="cursor-pointer text-right">
-                                                Amount {sortField === "Amount" && (sortDirection === "ascending" ? "▲" : "▼")}
+                                                {t('tx_col_amount')} {sortField === "Amount" && (sortDirection === "ascending" ? "▲" : "▼")}
                                                 {sortField !== "Amount" && <NotSort />}
                                             </th>
-                                            <th className="text-right">Actions</th>
+                                            <th className="text-right">{t('tx_col_actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -560,12 +611,12 @@ export const Transactions = () => {
                                         ) : error ? (
                                             <tr>
                                                 <td className="text-center text-red-500" colSpan={5}>
-                                                    <Alert type="error" message="Error cargando transacciones" />
+                                                    <Alert type="error" message={t('tx_error_loading')} />
                                                 </td>
                                             </tr>
                                         ) : transactions.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5}>{renderEmptyState("No hay transacciones para mostrar en lista.")}</td>
+                                                <td colSpan={5}>{renderEmptyState(t('tx_empty'))}</td>
                                             </tr>
                                         ) : (
                                             transactions.map((item) => (
@@ -603,9 +654,9 @@ export const Transactions = () => {
                                     ))}
                                 </div>
                             ) : error ? (
-                                <Alert type="error" message="Error cargando transacciones" />
+                                <Alert type="error" message={t('tx_error_loading')} />
                             ) : transactions.length === 0 ? (
-                                renderEmptyState("No hay transacciones para mostrar en grid.")
+                                renderEmptyState(t('tx_empty'))
                             ) : (
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                                     {transactions.map((item) => (
@@ -632,15 +683,15 @@ export const Transactions = () => {
                                             >
                                                 <FormattedNumber value={item.amount} isAmount={true} />
                                             </div>
-                                            <p className="mb-2 line-clamp-2 min-h-10 text-xs text-gray-600">{item.description || "Sin descripcion"}</p>
+                                            <p className="mb-2 line-clamp-2 min-h-10 text-xs text-gray-600">{item.description || t('tx_no_description')}</p>
                                             <div className="flex items-center justify-between text-[11px] text-gray-500">
                                                 <span>{new Date(item.date).toLocaleDateString()}</span>
                                                 <div className="flex items-center gap-1">
                                                     <button className="rounded px-2 py-1 text-emerald-700 hover:bg-emerald-50" onClick={() => handleEdit(item)}>
-                                                        Editar
+                                                        {t('tx_btn_edit')}
                                                     </button>
                                                     <button className="rounded px-2 py-1 text-rose-700 hover:bg-rose-50" onClick={() => handleDelete(item)}>
-                                                        Borrar
+                                                        {t('tx_btn_delete')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -656,13 +707,13 @@ export const Transactions = () => {
                             {isLoading ? (
                                 <div className="h-72 animate-pulse rounded-xl border border-gray-200 bg-gray-100"></div>
                             ) : error ? (
-                                <Alert type="error" message="Error cargando transacciones" />
+                                <Alert type="error" message={t('tx_error_loading')} />
                             ) : (
                                 <div className="space-y-3">
                                     <div className="space-y-2 sm:hidden">
                                         {mobileCalendarDays.length === 0 ? (
                                             <div className="rounded-lg border border-dashed border-gray-200 p-4 text-sm text-gray-500">
-                                                No hay movimientos para este mes.
+                                                {t('tx_empty')}
                                             </div>
                                         ) : (
                                             mobileCalendarDays.map(({ dayKey, items }) => (
@@ -674,7 +725,7 @@ export const Transactions = () => {
                                                 >
                                                     <div className="mb-2 flex items-center justify-between gap-2">
                                                         <span className="text-sm font-semibold text-gray-700">
-                                                            {new Date(dayKey).toLocaleDateString("es-ES", {
+                                                            {new Date(dayKey).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
                                                                 weekday: "short",
                                                                 day: "2-digit",
                                                                 month: "short",
@@ -695,7 +746,7 @@ export const Transactions = () => {
                                                                 </span>
                                                             </div>
                                                         ))}
-                                                        {items.length > 3 && <span className="text-[11px] font-semibold text-gray-500">+{items.length - 3} mas</span>}
+                                                        {items.length > 3 && <span className="text-[11px] font-semibold text-gray-500">{t('tx_more', { n: items.length - 3 })}</span>}
                                                     </div>
                                                 </button>
                                             ))
@@ -741,7 +792,7 @@ export const Transactions = () => {
                                                             ))}
                                                             {cell.dayTransactions.length > 2 && (
                                                                 <span className="block text-[11px] font-semibold text-gray-500">
-                                                                    +{cell.dayTransactions.length - 2} mas
+                                                                    {t('tx_more', { n: cell.dayTransactions.length - 2 })}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -769,7 +820,7 @@ export const Transactions = () => {
             </section>
 
             {currentModal === "add" && (
-                <Modal title={`${transactionResponse?.id ? "Edit" : "Add"} Transaction`} disableClickOutside={true}>
+                <Modal title={`${transactionResponse?.id ? t('tx_modal_edit') : t('tx_modal_add')}`} disableClickOutside={true}>
                     <AddTransaction data={transactionResponse} onSuccess={handleOnSuccess} />
                 </Modal>
             )}
@@ -778,8 +829,8 @@ export const Transactions = () => {
 
             {currentModal === "calendar-day" && (
                 <Modal
-                    title="Movimientos del dia"
-                    description={selectedCalendarDate.toLocaleDateString("es-ES", {
+                    title={t('tx_calendar_day_title')}
+                    description={selectedCalendarDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
                         weekday: "long",
                         day: "2-digit",
                         month: "long",
@@ -788,7 +839,7 @@ export const Transactions = () => {
                 >
                     {selectedCalendarItems.length === 0 ? (
                         <div className="rounded-lg border border-dashed border-gray-200 p-4 text-sm text-gray-500">
-                            No hay movimientos para este dia.
+                            {t('tx_empty')}
                         </div>
                     ) : (
                         <div className="space-y-2">
@@ -803,7 +854,7 @@ export const Transactions = () => {
                                                 {item.category}
                                             </span>
                                         </div>
-                                        <p className="truncate text-sm text-gray-700">{item.description || "Sin descripcion"}</p>
+                                        <p className="truncate text-sm text-gray-700">{item.description || t('tx_no_description')}</p>
                                     </div>
                                     <div className="flex items-center justify-between gap-3 sm:justify-end">
                                         <span
@@ -824,11 +875,11 @@ export const Transactions = () => {
 
             {currentModal === "delete" && (
                 <ConfirmDialog
-                    title="Eliminar elemento"
-                    description="Estas seguro de que quieres eliminar este elemento?"
+                    title={t('tx_delete_title')}
+                    description={t('tx_delete_msg')}
                     onConfirm={handleConfirmDelete}
-                    confirmText="Si, eliminar"
-                    cancelText="Cancelar"
+                    confirmText={t('tx_delete_confirm')}
+                    cancelText={t('tx_delete_cancel')}
                 />
             )}
         </>

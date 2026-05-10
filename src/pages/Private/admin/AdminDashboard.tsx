@@ -11,6 +11,9 @@ import type {
   ReportDiagnosticsResponse,
   ScheduledReportJob,
 } from '../../../core/admin/types/admin.types';
+import { useI18n } from '../../../core/i18n/useI18n';
+
+type Translator = ReturnType<typeof useI18n>['t'];
 
 const toDateRange = (from: string, to: string): DateRangeFilter => ({
   from: from || undefined,
@@ -41,16 +44,16 @@ const getJobStatusClassName = (job: ScheduledReportJob) => {
   return 'bg-rose-100 text-rose-800';
 };
 
-const getJobStatusLabel = (job: ScheduledReportJob) => {
+const getJobStatusLabel = (job: ScheduledReportJob, t: Translator) => {
   if (job.exists && job.isEnabled) {
-    return 'Activo';
+    return t('admin_job_active');
   }
 
   if (job.exists) {
-    return 'Deshabilitado';
+    return t('admin_job_disabled');
   }
 
-  return 'No programado';
+  return t('admin_job_missing');
 };
 
 export const AdminDashboard = () => {
@@ -58,6 +61,7 @@ export const AdminDashboard = () => {
   const [to, setTo] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   const request = useMemo(() => toDateRange(from, to), [from, to]);
 
   const { data, isLoading, error } = useQuery({
@@ -99,13 +103,13 @@ export const AdminDashboard = () => {
     <section className="app-page fade-in-up">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="page-title">Panel Administrativo</h1>
-          <p className="page-subtitle">Metrica operativa del sistema, errores recientes y endpoints mas usados.</p>
+          <h1 className="page-title">{t('admin_title')}</h1>
+          <p className="page-subtitle">{t('admin_subtitle')}</p>
         </div>
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <label className="text-sm text-gray-600">
-            Desde
+            {t('admin_from')}
             <input
               type="date"
               className="field-modern mt-1"
@@ -115,7 +119,7 @@ export const AdminDashboard = () => {
           </label>
 
           <label className="text-sm text-gray-600">
-            Hasta
+            {t('admin_to')}
             <input
               type="date"
               className="field-modern mt-1"
@@ -136,20 +140,20 @@ export const AdminDashboard = () => {
       )}
 
       {isLoading ? (
-        <p className="text-sm text-gray-600">Cargando dashboard...</p>
+        <p className="text-sm text-gray-600">{t('admin_loading')}</p>
       ) : error ? (
-        <Alert type="error" message="No se pudieron cargar las metricas del panel administrativo." />
+        <Alert type="error" message={t('admin_error_metrics')} />
       ) : (
         <>
           <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <DashboardCard title="Total Requests" value={data?.totalRequests ?? 0} color="neutral">
+            <DashboardCard title={t('admin_total_requests')} value={data?.totalRequests ?? 0} color="neutral">
               <i className="fas fa-network-wired" />
             </DashboardCard>
-            <DashboardCard title="Total Errores" value={data?.totalErrors ?? 0} color="red">
+            <DashboardCard title={t('admin_total_errors')} value={data?.totalErrors ?? 0} color="red">
               <i className="fas fa-triangle-exclamation" />
             </DashboardCard>
             <DashboardCard
-              title="Tasa de Error"
+              title={t('admin_error_rate')}
               value={`${(((data?.totalErrors ?? 0) / Math.max(data?.totalRequests ?? 1, 1)) * 100).toFixed(2)}%`}
               color="green"
             >
@@ -159,16 +163,16 @@ export const AdminDashboard = () => {
 
           <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
             <DashboardCard
-              title="Trabajos Programados"
+              title={t('admin_scheduled_jobs')}
               value={`${diagnostics?.existingJobs ?? 0}/${diagnostics?.totalJobs ?? 0}`}
               color={diagnosticsTone}
             >
               <i className="fas fa-calendar-check" />
             </DashboardCard>
-            <DashboardCard title="Pendientes" value={missingJobs} color={missingJobs > 0 ? 'red' : 'green'}>
+            <DashboardCard title={t('admin_pending_jobs')} value={missingJobs} color={missingJobs > 0 ? 'red' : 'green'}>
               <i className="fas fa-calendar-xmark" />
             </DashboardCard>
-            <DashboardCard title="Zona Horaria" value={diagnostics?.timeZone ?? '-'} color="neutral">
+            <DashboardCard title={t('admin_timezone')} value={diagnostics?.timeZone ?? '-'} color="neutral">
               <i className="fas fa-clock" />
             </DashboardCard>
           </div>
@@ -177,9 +181,9 @@ export const AdminDashboard = () => {
             <div className="soft-card rounded-2xl p-5 xl:col-span-1">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Estado de Reportes Programados</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('admin_scheduled_reports')}</h2>
                   <p className="mt-1 text-sm text-gray-600">
-                    Diagnostico de TickerQ y reprogramacion manual de los 4 jobs de reporte.
+                    {t('admin_scheduled_reports_desc')}
                   </p>
                 </div>
 
@@ -190,7 +194,7 @@ export const AdminDashboard = () => {
                     onClick={() => queryClient.invalidateQueries({ queryKey: ['reportDiagnostics'] })}
                     disabled={isDiagnosticsFetching || isScheduling}
                   >
-                    {isDiagnosticsFetching ? 'Actualizando...' : 'Actualizar'}
+                    {isDiagnosticsFetching ? t('admin_updating') : t('admin_refresh')}
                   </button>
                   <button
                     type="button"
@@ -198,17 +202,17 @@ export const AdminDashboard = () => {
                     onClick={() => runManualSchedule()}
                     disabled={isScheduling}
                   >
-                    {isScheduling ? 'Reprogramando...' : 'Reprogramar'}
+                    {isScheduling ? t('admin_rescheduling') : t('admin_reschedule')}
                   </button>
                 </div>
               </div>
 
               {isDiagnosticsLoading ? (
-                <p className="text-sm text-gray-600">Cargando diagnostico...</p>
+                <p className="text-sm text-gray-600">{t('admin_loading_diagnostics')}</p>
               ) : diagnosticsError ? (
                 <Alert
                   type="error"
-                  message="No se pudo cargar el diagnostico de trabajos programados." 
+                  message={t('admin_error_diagnostics')} 
                 />
               ) : (
                 <>
@@ -235,9 +239,9 @@ export const AdminDashboard = () => {
             <div className="soft-card rounded-2xl p-5 xl:col-span-2">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Trabajos Configurados</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('admin_configured_jobs')}</h2>
                   <p className="mt-1 text-sm text-gray-600">
-                    Verificacion directa de existencia, expresion y habilitacion de cada job.
+                    {t('admin_configured_jobs_desc')}
                   </p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -246,18 +250,18 @@ export const AdminDashboard = () => {
               </div>
 
               {isDiagnosticsLoading ? (
-                <p className="text-sm text-gray-600">Cargando trabajos...</p>
+                <p className="text-sm text-gray-600">{t('admin_loading_jobs')}</p>
               ) : diagnosticsError ? (
-                <Alert type="error" message="No se pudo verificar el estado de los trabajos." />
+                <Alert type="error" message={t('admin_error_jobs')} />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="table-modern min-w-[760px]">
                     <thead>
                       <tr>
-                        <th className="text-left">Funcion</th>
-                        <th className="text-left">Estado</th>
-                        <th className="text-left">Expresion</th>
-                        <th className="text-left">Descripcion</th>
+                        <th className="text-left">{t('admin_col_function')}</th>
+                        <th className="text-left">{t('admin_col_status')}</th>
+                        <th className="text-left">{t('admin_col_expression')}</th>
+                        <th className="text-left">{t('admin_col_description')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -269,7 +273,7 @@ export const AdminDashboard = () => {
                           </td>
                           <td className="text-sm">
                             <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${getJobStatusClassName(job)}`}>
-                              {getJobStatusLabel(job)}
+                              {getJobStatusLabel(job, t)}
                             </span>
                           </td>
                           <td className="text-sm text-gray-600">{job.expression}</td>
@@ -285,7 +289,7 @@ export const AdminDashboard = () => {
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <div className="soft-card rounded-2xl p-5">
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Logs por nivel</h2>
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('admin_logs_by_level')}</h2>
               <div className="space-y-3">
                 {Object.entries(data?.logsByLevel ?? {}).map(([level, total]) => (
                   <div key={level} className="flex items-center justify-between rounded-xl border border-gray-200 px-3 py-2">
@@ -297,7 +301,7 @@ export const AdminDashboard = () => {
             </div>
 
             <div className="soft-card rounded-2xl p-5">
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Endpoints mas usados</h2>
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('admin_top_endpoints')}</h2>
               <div className="space-y-2">
                 {Object.entries(data?.mostUsedEndpoints ?? {}).map(([path, total]) => (
                   <div key={path} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
@@ -309,15 +313,15 @@ export const AdminDashboard = () => {
             </div>
 
             <div className="soft-card rounded-2xl p-5 xl:col-span-2">
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">Errores recientes</h2>
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('admin_recent_errors')}</h2>
               <div className="overflow-x-auto">
                 <table className="table-modern">
                   <thead>
                     <tr>
-                      <th className="text-left">Fecha</th>
-                      <th className="text-left">Mensaje</th>
-                      <th className="text-left">Endpoint</th>
-                      <th className="text-left">Usuario</th>
+                      <th className="text-left">{t('admin_col_date')}</th>
+                      <th className="text-left">{t('admin_col_message')}</th>
+                      <th className="text-left">{t('admin_col_endpoint')}</th>
+                      <th className="text-left">{t('admin_col_user')}</th>
                     </tr>
                   </thead>
                   <tbody>
