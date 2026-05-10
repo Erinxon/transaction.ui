@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-import { useEffect, useState, type ReactNode } from "react"
-import { useNavigate } from "react-router-dom";
-=======
 import { useEffect, useRef, useState, type ReactNode } from "react"
->>>>>>> 5b095980de7dc18fe2ca061838c05ff7d7881ddc
+import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "../../models/AppRoutes";
 import { MenuLink } from "../../components";
 import { useAuth } from "../../core/auth/context/useAuth";
@@ -234,7 +230,7 @@ export const Layout = ({ children }: Props) => {
 
                         <button
                             className="topbar-icon-btn topbar-logout-btn"
-                            onClick={() => { logout(); }}
+                            onClick={handleLogout}
                             aria-label={t('nav_logout')}
                             title={t('nav_logout')}
                         >
