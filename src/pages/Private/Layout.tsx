@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react"
+import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "../../models/AppRoutes";
 import { MenuLink } from "../../components";
 import { useAuth } from "../../core/auth/context/useAuth";
@@ -10,6 +11,7 @@ interface Props {
 
 export const Layout = ({ children }: Props) => {
     const { logout } = useAuth();
+    const navigate = useNavigate();
     const isAdmin = isAdminToken(localStorage.getItem('accessToken'));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobileView, setIsMobileView] = useState<boolean>(() => window.innerWidth < 1024);
@@ -36,6 +38,12 @@ export const Layout = ({ children }: Props) => {
 
     const closeSidebar = () => {
         setSidebarOpen(false);
+    }
+
+    const handleLogout = () => {
+        logout();
+        closeSidebar();
+        navigate(AppRoutes.login, { replace: true });
     }
 
     return (
@@ -140,16 +148,14 @@ export const Layout = ({ children }: Props) => {
                         </>
                     )}
 
-                    <MenuLink
-                        name="Logout" 
-                        icon="fas fa-arrow-right-from-bracket" 
-                        to={`${AppRoutes.login}`}
-                        className="app-nav-link mt-6"
-                        onClick={() => {
-                            logout();
-                            closeSidebar();
-                        }}
-                    />
+                    <button
+                        type="button"
+                        className="app-nav-link mt-6 w-full border-0 bg-transparent text-left"
+                        onClick={handleLogout}
+                    >
+                        <i className="fas fa-arrow-right-from-bracket" />
+                        <span>Logout</span>
+                    </button>
                 </nav>
             </aside>
 
