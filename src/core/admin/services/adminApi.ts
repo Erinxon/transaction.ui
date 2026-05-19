@@ -11,11 +11,9 @@ import type {
   ImportCategoriesResponse,
   AdminUsersRequest,
   DateRangeFilter,
-  ManualScheduleResponse,
   SystemLog,
-  ReportDiagnosticsResponse,
-  UpsertAdminCategoryRequest,
   UserAudit,
+  UpsertAdminCategoryRequest,
   UserStatisticsResponse,
 } from '../types/admin.types';
 
@@ -26,11 +24,6 @@ export const getAdminLogs = async (request: AdminLogsRequest): Promise<SystemLog
 
 export const getLogStatistics = async (request: DateRangeFilter): Promise<Record<string, number>> => {
   const response = await api.get('/api/admin/logs/statistics', { params: request });
-  return response.data;
-};
-
-export const getRecentErrors = async (count = 10): Promise<SystemLog[]> => {
-  const response = await api.get('/api/admin/logs/recent-errors', { params: { count } });
   return response.data;
 };
 
@@ -91,16 +84,6 @@ export const getUserStatistics = async (userId: string): Promise<UserStatisticsR
 
 export const getAdminDashboard = async (request: DateRangeFilter): Promise<AdminDashboardResponse> => {
   const response = await api.get('/api/admin/dashboard', { params: request });
-  return response.data;
-};
-
-export const getReportDiagnostics = async (): Promise<ReportDiagnosticsResponse> => {
-  const response = await api.get('/Reports/diagnostics');
-  return response.data;
-};
-
-export const triggerManualReportScheduling = async (): Promise<ManualScheduleResponse> => {
-  const response = await api.post('/Reports/manual-schedule');
   return response.data;
 };
 
