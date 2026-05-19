@@ -18,6 +18,18 @@ type RefreshResponse = {
 // Promise compartida para evitar múltiples refresh simultáneos.
 let refreshPromise: Promise<string | null> | null = null;
 
+// Callback registrado por AuthProvider para cerrar sesión desde el interceptor.
+let logoutCallback: (() => void) | null = null;
+export const setLogoutCallback = (cb: () => void) => {
+  logoutCallback = cb;
+};
+
+const forceLogout = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  logoutCallback?.();
+};
+
 const setAuthorizationHeader = (req: InternalAxiosRequestConfig, token: string) => {
   req.headers.Authorization = `${token}`;
 };
@@ -66,9 +78,8 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
 
       accessToken = await refreshPromise;
     } catch (err) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      throw err; // o redirige al login
+      forceLogout();
+      throw err;
     }
   }
 
@@ -108,8 +119,7 @@ api.interceptors.response.use(
           return api(originalRequest);
         }
       } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        forceLogout();
       }
     }
 
