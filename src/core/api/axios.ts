@@ -31,7 +31,7 @@ const forceLogout = () => {
 };
 
 const setAuthorizationHeader = (req: InternalAxiosRequestConfig, token: string) => {
-  req.headers.Authorization = ` ${token}`;
+  req.headers.Authorization = `Bearer ${token}`;
 };
 
 const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
