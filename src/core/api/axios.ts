@@ -68,6 +68,11 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
   const isExpired = isTokenValid(accessToken) === false;
 
   // Si expiró, esperamos un refresh único y reutilizamos su resultado.
+  if (isExpired && !refreshToken) {
+    forceLogout();
+    return Promise.reject(new Error('Session expired: missing refresh token'));
+  }
+
   if (isExpired && refreshToken) {
     try {
       if (!refreshPromise) {
@@ -77,6 +82,11 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
       }
 
       accessToken = await refreshPromise;
+
+      if (!accessToken) {
+        forceLogout();
+        return Promise.reject(new Error('Session expired: refresh did not return access token'));
+      }
     } catch (err) {
       forceLogout();
       throw err;
@@ -101,7 +111,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!refreshToken) {
-        localStorage.removeItem('accessToken');
+        forceLogout();
         return Promise.reject(error);
       }
 
@@ -118,6 +128,8 @@ api.interceptors.response.use(
           setAuthorizationHeader(originalRequest, newAccessToken);
           return api(originalRequest);
         }
+
+        forceLogout();
       } catch {
         forceLogout();
       }
