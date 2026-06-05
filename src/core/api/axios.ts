@@ -13,6 +13,20 @@ const api = axios.create({
 type RefreshResponse = {
   accessToken?: string;
   refreshToken?: string;
+  AccessToken?: string;
+  RefreshToken?: string;
+  access_token?: string;
+  refresh_token?: string;
+  token?: string;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    AccessToken?: string;
+    RefreshToken?: string;
+    access_token?: string;
+    refresh_token?: string;
+    token?: string;
+  };
 };
 
 // Promise compartida para evitar múltiples refresh simultáneos.
@@ -36,11 +50,30 @@ const setAuthorizationHeader = (req: InternalAxiosRequestConfig, token: string) 
 
 const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
   const { data } = await axios.post<RefreshResponse>(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
-    refreshToken,
+    RefreshToken: refreshToken,
   });
 
-  const newAccessToken = typeof data.accessToken === 'string' ? data.accessToken : null;
-  const newRefreshToken = typeof data.refreshToken === 'string' ? data.refreshToken : null;
+  const payload = data.data ?? data;
+
+  const newAccessToken =
+    typeof payload.accessToken === 'string'
+      ? payload.accessToken
+      : typeof payload.AccessToken === 'string'
+        ? payload.AccessToken
+      : typeof payload.access_token === 'string'
+        ? payload.access_token
+        : typeof payload.token === 'string'
+          ? payload.token
+          : null;
+
+  const newRefreshToken =
+    typeof payload.refreshToken === 'string'
+      ? payload.refreshToken
+      : typeof payload.RefreshToken === 'string'
+        ? payload.RefreshToken
+      : typeof payload.refresh_token === 'string'
+        ? payload.refresh_token
+        : null;
 
   if (newAccessToken) {
     localStorage.setItem('accessToken', newAccessToken);
@@ -60,6 +93,27 @@ const refreshAccessToken = async (refreshToken: string): Promise<string | null> 
 api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
   let accessToken = localStorage.getItem('accessToken');
   const refreshToken = localStorage.getItem('refreshToken');
+
+  // Si no hay access token, intentamos recuperar sesión usando refresh token.
+  if (!accessToken && refreshToken) {
+    try {
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken(refreshToken).finally(() => {
+          refreshPromise = null;
+        });
+      }
+
+      accessToken = await refreshPromise;
+
+      if (!accessToken) {
+        forceLogout();
+        return Promise.reject(new Error('Session expired: unable to refresh access token'));
+      }
+    } catch (err) {
+      forceLogout();
+      throw err;
+    }
+  }
 
   if (!accessToken) {
     return req;
