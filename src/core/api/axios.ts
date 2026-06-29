@@ -29,6 +29,16 @@ type RefreshResponse = {
   };
 };
 
+const getFirstStringValue = (...values: Array<string | undefined | null>): string | null => {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+  }
+
+  return null;
+};
+
 // Promise compartida para evitar múltiples refresh simultáneos.
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -45,35 +55,43 @@ const forceLogout = () => {
 };
 
 const setAuthorizationHeader = (req: InternalAxiosRequestConfig, token: string) => {
-  req.headers.Authorization = `Bearer ${token}`;
+  req.headers = {
+    ...(req.headers ?? {}),
+    Authorization: `Bearer ${token}`,
+  } as InternalAxiosRequestConfig['headers'];
+};
+
+const refreshSession = async (refreshTokenValue: string): Promise<string | null> => {
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken(refreshTokenValue).finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
 };
 
 const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
   const { data } = await axios.post<RefreshResponse>(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
+    refreshToken,
     RefreshToken: refreshToken,
+    refresh_token: refreshToken,
   });
 
-  const payload = data.data ?? data;
+  const payload = (data?.data ?? data) as RefreshResponse;
 
-  const newAccessToken =
-    typeof payload.accessToken === 'string'
-      ? payload.accessToken
-      : typeof payload.AccessToken === 'string'
-        ? payload.AccessToken
-      : typeof payload.access_token === 'string'
-        ? payload.access_token
-        : typeof payload.token === 'string'
-          ? payload.token
-          : null;
+  const newAccessToken = getFirstStringValue(
+    payload.accessToken,
+    payload.AccessToken,
+    payload.access_token,
+    payload.token,
+  );
 
-  const newRefreshToken =
-    typeof payload.refreshToken === 'string'
-      ? payload.refreshToken
-      : typeof payload.RefreshToken === 'string'
-        ? payload.RefreshToken
-      : typeof payload.refresh_token === 'string'
-        ? payload.refresh_token
-        : null;
+  const newRefreshToken = getFirstStringValue(
+    payload.refreshToken,
+    payload.RefreshToken,
+    payload.refresh_token,
+  );
 
   if (newAccessToken) {
     localStorage.setItem('accessToken', newAccessToken);
@@ -83,6 +101,8 @@ const refreshAccessToken = async (refreshToken: string): Promise<string | null> 
 
   if (newRefreshToken) {
     localStorage.setItem('refreshToken', newRefreshToken);
+  } else {
+    localStorage.removeItem('refreshToken');
   }
 
   return newAccessToken;
@@ -97,13 +117,7 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
   // Si no hay access token, intentamos recuperar sesión usando refresh token.
   if (!accessToken && refreshToken) {
     try {
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken(refreshToken).finally(() => {
-          refreshPromise = null;
-        });
-      }
-
-      accessToken = await refreshPromise;
+      accessToken = await refreshSession(refreshToken);
 
       if (!accessToken) {
         forceLogout();
@@ -129,13 +143,7 @@ api.interceptors.request.use(async (req: InternalAxiosRequestConfig) => {
 
   if (isExpired && refreshToken) {
     try {
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken(refreshToken).finally(() => {
-          refreshPromise = null;
-        });
-      }
-
-      accessToken = await refreshPromise;
+      accessToken = await refreshSession(refreshToken);
 
       if (!accessToken) {
         forceLogout();
@@ -161,6 +169,11 @@ api.interceptors.response.use(
     const originalRequest = error.config as RetryableRequestConfig | undefined;
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        forceLogout();
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
 
@@ -170,22 +183,17 @@ api.interceptors.response.use(
       }
 
       try {
-        if (!refreshPromise) {
-          refreshPromise = refreshAccessToken(refreshToken).finally(() => {
-            refreshPromise = null;
-          });
-        }
-
-        const newAccessToken = await refreshPromise;
+        const newAccessToken = await refreshSession(refreshToken);
 
         if (newAccessToken) {
           setAuthorizationHeader(originalRequest, newAccessToken);
-          return api(originalRequest);
+          return api.request(originalRequest);
         }
 
         forceLogout();
-      } catch {
+      } catch (refreshError) {
         forceLogout();
+        return Promise.reject(refreshError);
       }
     }
 
