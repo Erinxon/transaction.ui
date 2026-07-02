@@ -25,7 +25,13 @@ export const UpdateProfileSchema = z.object({
         .refine(val => !val || /[^a-zA-Z0-9]/.test(val), {
             message: 'La contraseña debe tener al menos un carácter no alfanumérico',
         }),
-    confirmPassword: z.string().max(250, 'No debe exceder los 250 caracteres').optional()
+    confirmPassword: z.string().max(250, 'No debe exceder los 250 caracteres').optional(),
+    openAiApiKey: z
+        .string()
+        .optional()
+        .refine(val => !val || val.startsWith('sk-'), {
+            message: "La API key de OpenAI debe comenzar con 'sk-'",
+        }),
 }).refine(data => data.password === data.confirmPassword, {
     message: 'Las contraseñas no son iguales',
     path: ['confirmPassword']

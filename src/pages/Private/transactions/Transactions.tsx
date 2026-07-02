@@ -19,7 +19,11 @@ import FormattedNumber from "../../../components/FormattedNumber";
 import Pagination from "../../../components/Pagination";
 import { SkeletonRow } from "../../../components/SkeletonRow";
 import { AddTransaction } from "./components/AddTransaction";
+import { DocumentImportModal } from "./components/DocumentImportModal";
 import { useI18n } from "../../../core/i18n/useI18n";
+import { getProfile } from "../../../core/profile/services/profileApi";
+import { Link } from "react-router-dom";
+import { AppRoutes } from "../../../models/AppRoutes";
 
 const triggerDownload = (blob: Blob, fileName: string) => {
     const url = URL.createObjectURL(blob);
@@ -47,7 +51,7 @@ export const Transactions = () => {
     const importInputRef = useRef<HTMLInputElement | null>(null);
     const { t, locale } = useI18n();
 
-    const [currentModal, setCurrentModal] = useState<"add" | "filter" | "delete" | "calendar-day">("add");
+    const [currentModal, setCurrentModal] = useState<"add" | "filter" | "delete" | "calendar-day" | "document-import">("add");
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [transactionResponse, setTransactionResponse] = useState<TransactionResponse | null>(null);
@@ -181,6 +185,11 @@ export const Transactions = () => {
         ),
     });
 
+    const { data: profileData } = useQuery({
+        queryKey: ["getProfile"],
+        queryFn: () => getProfile(),
+    });
+
     useEffect(() => {
         if (!filters.categoryId) {
             return;
@@ -288,6 +297,17 @@ export const Transactions = () => {
 
         mutateImport(file);
         event.target.value = "";
+    };
+
+    const handleDocumentImportClick = () => {
+        if (!profileData?.hasOpenAiApiKey) {
+            setFeedbackMessage("");
+            setErrorMessage(t('tx_doc_import_no_key'));
+            return;
+        }
+
+        setCurrentModal("document-import");
+        setIsOpen(true);
     };
 
     const transactions = useMemo(() => data?.items ?? [], [data?.items]);
@@ -433,12 +453,32 @@ export const Transactions = () => {
                         <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleImportClick} disabled={isImporting}>
                             <i className="fas fa-file-import mr-2"></i> {isImporting ? t('tx_downloading') : t('tx_import')}
                         </button>
+                        <button className="btn-modern btn-secondary w-full justify-center lg:w-auto" onClick={handleDocumentImportClick}>
+                            <i className="fas fa-file-image mr-2"></i> {t('tx_import_document')}
+                        </button>
                         <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportFile} disabled={isImporting} />
                     </div>
                 </div>
 
                 {feedbackMessage && <Alert type="success" message={feedbackMessage} className="mb-4" onClose={() => setFeedbackMessage("")} />}
-                {errorMessage && <Alert type="error" message={errorMessage} className="mb-4" onClose={() => setErrorMessage("")} />}
+                {errorMessage && (
+                    <Alert
+                        type="error"
+                        message={errorMessage === t('tx_doc_import_no_key') ? "" : errorMessage}
+                        className="mb-4"
+                        onClose={() => setErrorMessage("")}
+                        templateMessage={
+                            errorMessage === t('tx_doc_import_no_key') ? (
+                                <span>
+                                    {errorMessage}{' '}
+                                    <Link to={`${AppRoutes.private.root}/${AppRoutes.private.profile}`} className="font-semibold underline">
+                                        {t('tx_doc_import_go_profile')}
+                                    </Link>
+                                </span>
+                            ) : undefined
+                        }
+                    />
+                )}
 
                 <div className="soft-card mb-4 rounded-2xl p-4">
                     <div className="flex flex-wrap items-end justify-between gap-4">
@@ -871,6 +911,20 @@ export const Transactions = () => {
                         </div>
                     )}
                 </Modal>
+            )}
+
+            {currentModal === "document-import" && (
+                <DocumentImportModal
+                    onSuccess={(message) => {
+                        setErrorMessage("");
+                        setFeedbackMessage(message);
+                        reload();
+                    }}
+                    onError={(message) => {
+                        setFeedbackMessage("");
+                        setErrorMessage(message);
+                    }}
+                />
             )}
 
             {currentModal === "delete" && (
