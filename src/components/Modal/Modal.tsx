@@ -8,14 +8,22 @@ interface Props {
     title: string,
     description?: string,
     children: React.ReactNode,
-    disableClickOutside?: boolean
+    disableClickOutside?: boolean,
+    onRequestClose?: () => void,
+    panelClassName?: string,
 }
 
-export const Modal = ({ icon, title, description, children, disableClickOutside }: Props) => {
+export const Modal = ({ icon, title, description, children, disableClickOutside, onRequestClose, panelClassName = "max-w-xl" }: Props) => {
     const modalRef = useRef<HTMLDivElement>(null)
     const { isOpen, setIsOpen } = useModalContext();
 
-    const closeModal = () => { setIsOpen(false) }
+    const closeModal = () => {
+        if (onRequestClose) {
+            onRequestClose();
+        } else {
+            setIsOpen(false);
+        }
+    }
 
     const modalRoot = document.getElementById("modal")
 
@@ -26,7 +34,7 @@ export const Modal = ({ icon, title, description, children, disableClickOutside 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                setIsOpen(false)
+                closeModal();
             }
         }
 
@@ -54,7 +62,7 @@ export const Modal = ({ icon, title, description, children, disableClickOutside 
             }}
         >
             <div
-                className="w-full max-w-xl overflow-hidden rounded-3xl border border-white/70 dark:border-white/10 bg-white/90 dark:bg-[#152018]/95 shadow-2xl backdrop-blur"
+                className={`w-full ${panelClassName} overflow-hidden rounded-3xl border border-white/70 dark:border-white/10 bg-white/90 dark:bg-[#152018]/95 shadow-2xl backdrop-blur`}
                 onClick={handleContentClick}
                 ref={modalRef}
             >
@@ -66,7 +74,7 @@ export const Modal = ({ icon, title, description, children, disableClickOutside 
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-[#e2f0e8]">{title}</h3>
                         </div>
                         <button
-                            onClick={() => setIsOpen(false)}
+                            onClick={closeModal}
                             className="rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#253d2e] focus:outline-none focus:ring-2 focus:ring-emerald-500 p-2 cursor-pointer"
                         >
                             <X className="w-5 h-5" />

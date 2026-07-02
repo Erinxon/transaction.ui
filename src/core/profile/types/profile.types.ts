@@ -14,7 +14,8 @@ export interface ProfileRequest {
   receiveWeeklyExpenseReport: boolean;
   receiveBiweeklyExpenseReport: boolean;
   sendWeeklyTransactionBackup: boolean;
-  changePassword?: RequestChangePassword | null; 
+  changePassword?: RequestChangePassword | null;
+  openAiApiKey?: string | null;
 }
 
 
@@ -29,4 +30,6 @@ export interface ProfileResponse {
   receiveWeeklyExpenseReport: boolean;
   receiveBiweeklyExpenseReport: boolean;
   sendWeeklyTransactionBackup: boolean;
+  hasOpenAiApiKey: boolean;
+  openAiApiKeyMasked: string | null;
 }

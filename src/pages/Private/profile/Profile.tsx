@@ -13,6 +13,8 @@ import { useI18n } from "../../../core/i18n/useI18n";
 export const Profile = () => {
     const queryClient = useQueryClient();
     const [errorMsg, setErrorMsg] = useState<string[]>([]);
+    const [showOpenAiKeyInput, setShowOpenAiKeyInput] = useState(false);
+    const [removeOpenAiKey, setRemoveOpenAiKey] = useState(false);
     const { t } = useI18n();
 
     const { isLoading, error, data } = useQuery({
@@ -30,6 +32,7 @@ export const Profile = () => {
     });
 
     const receiveEmailNotifications = watch('receiveEmailNotifications');
+    const openAiApiKeyValue = watch('openAiApiKey');
 
     useEffect(() => {
         if (!receiveEmailNotifications) {
@@ -42,10 +45,13 @@ export const Profile = () => {
 
     const { mutate: updateMutate, isPending: updateIsPending } = useMutation({
         mutationFn: updateProfile,
-        onSuccess: () => {
+            onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["getProfile"]
             });
+            setShowOpenAiKeyInput(false);
+            setRemoveOpenAiKey(false);
+            setValue('openAiApiKey', '');
         }
     });
 
@@ -66,7 +72,10 @@ export const Profile = () => {
             changePassword: formData?.currentPassword && formData?.password && formData?.confirmPassword ? {
                 currentPassword: formData.currentPassword,
                 newPassword: formData.password
-            } : null
+            } : null,
+            openAiApiKey: removeOpenAiKey
+                ? ""
+                : (formData.openAiApiKey?.trim() ? formData.openAiApiKey.trim() : undefined),
         }, {
             onError: (error) => {
                 const axiosError = error as AxiosError;
@@ -260,6 +269,66 @@ export const Profile = () => {
                                         )}
                                     </div>
 
+                                    <h3 className="mb-2 text-lg font-semibold text-gray-800">{t('profile_openai_title')}</h3>
+                                    <p className="mb-4 text-sm text-gray-500">{t('profile_openai_desc')}</p>
+                                    <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50/60 p-4">
+                                        {data?.hasOpenAiApiKey && !showOpenAiKeyInput && !removeOpenAiKey ? (
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{t('profile_openai_key_saved')}</p>
+                                                    <p className="font-mono text-sm text-gray-700">{data.openAiApiKeyMasked}</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        className="btn-modern btn-secondary"
+                                                        onClick={() => {
+                                                            setShowOpenAiKeyInput(true);
+                                                            setRemoveOpenAiKey(false);
+                                                        }}
+                                                    >
+                                                        {t('profile_openai_change')}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn-modern btn-ghost text-rose-700"
+                                                        onClick={() => {
+                                                            setRemoveOpenAiKey(true);
+                                                            setShowOpenAiKeyInput(false);
+                                                            setValue('openAiApiKey', '');
+                                                        }}
+                                                    >
+                                                        {t('profile_openai_remove')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <label htmlFor="openai-key" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                                    {t('profile_openai_key')}
+                                                </label>
+                                                <InputForm
+                                                    name="openAiApiKey"
+                                                    control={control}
+                                                    type="password"
+                                                    error={errors.openAiApiKey as FieldError}
+                                                    placeholder={t('profile_openai_key_placeholder')}
+                                                />
+                                                {removeOpenAiKey && (
+                                                    <p className="mt-2 text-sm text-rose-600">La clave se eliminará al guardar.</p>
+                                                )}
+                                            </div>
+                                        )}
+                                        <a
+                                            href="https://platform.openai.com/api-keys"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="mt-3 inline-block text-sm text-emerald-700 hover:underline"
+                                        >
+                                            {t('profile_openai_help')}
+                                        </a>
+                                    </div>
+
                                     {errorMsg.length > 0 && (
                                         <Alert
                                             type='error'
@@ -286,8 +355,8 @@ export const Profile = () => {
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={!isDirty}
-                                            className={`btn-modern ${isDirty ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
+                                            disabled={!isDirty && !removeOpenAiKey && !openAiApiKeyValue?.trim()}
+                                            className={`btn-modern ${isDirty || removeOpenAiKey || openAiApiKeyValue?.trim() ? 'btn-primary' : 'bg-emerald-900/70 text-white cursor-not-allowed'}`}
                                         >
                                             {updateIsPending ? t('profile_saving') : t('profile_save')}
                                         </button>
