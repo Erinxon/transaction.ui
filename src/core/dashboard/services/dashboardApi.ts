@@ -25,12 +25,7 @@ const toSummaryRequest = (request: DashboardFilter): DashboardSummaryRequest => 
   startDate: request.startDate ?? undefined,
   endDate: request.endDate ?? undefined,
   description: request.description ?? undefined,
-  transactionTypeId:
-    request.transactionTypeId === 1
-      ? 0
-      : request.transactionTypeId === 2
-        ? 1
-        : undefined,
+  transactionTypeId: request.transactionTypeId ?? undefined,
   categoryId: request.categoryId ?? undefined,
 });
 

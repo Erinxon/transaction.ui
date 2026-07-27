@@ -20,7 +20,7 @@ export interface DashboardSummaryRequest {
     startDate?: string;
     endDate?: string;
     description?: string;
-    transactionTypeId?: 0 | 1;
+    transactionTypeId?: 1 | 2;
     categoryId?: number;
 }
 
